@@ -1,0 +1,30 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+        - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+        - GEMINI_API_KEY=${GEMINI_API_KEY}
+        - APP_URL=${APP_URL}
+    ports:
+      - "8080:80"
+    env_file:
+      - .env
+    restart: unless-stopped
+
+# To run in development mode (with hot-reload):
+# You can create a separate docker-compose.dev.yml or use this:
+#
+#  dev:
+#    image: oven/bun:alpine
+#    working_dir: /app
+#    volumes:
+#      - .:/app
+#      - /app/node_modules
+#    ports:
+#      - "3000:3000"
+#    command: bun run dev
+#    env_file:
+#      - .env

@@ -1,0 +1,91 @@
+SECTION 5 — PHASE 2 DETAILS
+
+1. Calendar (SETELAH AGENDA DAN TASK KELAR SIH)
+- monthly / weekly view
+- all agendas
+- division filter
+- Google Calendar sync ready
+- reminders ready
+
+2. Document Management (TERAKHIRAN PLS)
+- auto numbering
+- templates:
+  invitation
+  permission letter
+  proposal
+  LPJ/report
+- digital signature
+- export PDF
+- archive
+- approvals
+
+3. File Archive (SETELAH DOCUMENT MANAGEMENT)
+Folders:
+- proposals
+- reports
+- design assets
+- documentation
+- templates
+
+4. Announcements (PRIORITAS)
+- admin posting
+- pin important notices
+- read status
+
+
+SECTION 6 — PHASE 3 DETAILS
+
+1. POS / Product
+- CRUD products
+- stock tracking
+- variants
+- cash / QRIS
+- sales history
+- revenue analytics
+
+2. Attendance
+- location check-in
+- geofence ready
+- selfie proof
+- history
+- event attendance
+
+3. Inventory 
+- item list
+- quantity
+- condition
+- borrowed by
+- return tracking
+
+SECTION 7 — UI / UX REQUIREMENTS
+
+Use modern admin dashboard design:
+
+- Sidebar navigation
+- Top navbar
+- Card layouts
+- Great spacing
+- Excellent typography
+- Search/filter everywhere
+- Tables with sorting
+- Skeleton loading
+- Toast notifications
+- Empty states
+- Dark/light mode optional
+- Smooth subtle animations only
+- Not visually overwhelming
+
+
+SECTION 8 — CODE QUALITY RULES
+
+- Strict TypeScript
+- Reusable components
+- Feature-based folder structure
+- Small maintainable files
+- Refactor large components immediately
+- Zod validation
+- Error boundaries
+- Optimized queries
+- Good naming conventions
+- Clean architecture
+- Scalable database design

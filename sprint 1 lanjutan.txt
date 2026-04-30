@@ -1,0 +1,40 @@
+finance
+- filter button doesn't do anyhting when clicked
+- export button doesn't do anything when clicked
+- if the one adding the modals are super admin / admin / bph, automatically approved
+- adjust the table to be like this (reference this column: Type	Date	Month	Event	Item	Debt	Credit	Amount	Division	From	To	Place	Payment Type	Receipt	Notes)
+- Event reference to this: Opening Balance
+WP
+Equipment
+Misc
+Cash
+Operational Expense
+WP Staff
+Merchandise
+Sertijab
+PnC
+Open House
+Commission
+SPIN ETAM
+
+-
+
+finance ada tiga sub page lagi
+- saat finance diklik nanti ada dropdown (di sidebar) dan bisa buka tiga opsi di bawah ini:
+- ledger (yang sekarang ada di finance), monthly cash payment (uang kas bulanan), split bill (bisa dibagi manual assign to member
+- member bisa upload bukti bayar di monthly cash atau split bill dan upload gambar (bayar manual)
+
+--
+
+task board:
+- dibagi menjadi 5 bagian (all, bph, class, creative media, entrepreneurship)
+- nanti bias diklik lagi jadi terpisah per bagian
+- bisa di kasih tag agenda/proker apa
+- task board bisa masukkin proker yang berjalan
+
+---
+
+profile
+- ada page my profile
+- bisa kasih photo profile
+- profile page super admin bisa edit role, admin tidak bisa edit role, member/advisor hanya bisa edit nama,nim,email,password,batch year

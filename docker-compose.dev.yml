@@ -1,0 +1,17 @@
+services:
+  dev:
+    image: oven/bun:alpine
+    working_dir: /app
+    volumes:
+      - .:/app
+      - /app/node_modules # Menghindari conflict antara node_modules host dan container
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - APP_URL=${APP_URL}
+    command: sh -c "bun install && bun run dev"
+    env_file:
+      - .env

@@ -5,10 +5,10 @@ export const APP_CONFIG = {
 };
 
 export const DIVISIONS = [
+  'Executive Board',
   'Class',
   'Creative Media',
   'Entrepreneurship',
-  'Executive Board',
 ] as const;
 
 export type Division = typeof DIVISIONS[number];

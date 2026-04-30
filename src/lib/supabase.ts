@@ -33,6 +33,7 @@ export type Task = {
   pic_id?: string;
   deadline?: string;
   progress_percent: number;
+  tags?: string[];
   created_at: string;
 };
 

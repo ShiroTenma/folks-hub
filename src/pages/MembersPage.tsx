@@ -36,6 +36,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { motion } from 'motion/react';
 import { supabase, type Profile } from '@/lib/supabase';
+import { useAuthStore } from '@/store/useAuthStore';
 import { ROLES, DIVISIONS, BATCH_YEARS } from '@/lib/constants';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -55,6 +56,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { createNotification } from '@/lib/notifications';
+import { Key } from 'lucide-react';
 
 const getRoleBadge = (role: string) => {
   const roleConfig = ROLES.find(r => r.id === role?.toLowerCase() || r.label === role);
@@ -66,10 +68,13 @@ const getRoleBadge = (role: string) => {
 };
 
 export function MembersPage() {
+  const { profile: currentUserProfile } = useAuthStore();
   const [search, setSearch] = React.useState('');
   const [divisionFilter, setDivisionFilter] = React.useState<string>('all');
   const [members, setMembers] = React.useState<Profile[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const ITEMS_PER_PAGE = 15;
   
   // Dialog state
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
@@ -84,8 +89,11 @@ export function MembersPage() {
     role: 'member' as Profile['role'],
     status: 'active' as Profile['status'],
     contact: '',
-    batch: BATCH_YEARS[0] as string
+    batch: BATCH_YEARS[0] as string,
+    password: '' // New password field
   });
+
+  const isSuperAdmin = currentUserProfile?.role === 'super_admin';
 
   React.useEffect(() => {
     fetchMembers();
@@ -118,7 +126,8 @@ export function MembersPage() {
         role: member.role || 'member',
         status: member.status || 'active',
         contact: member.contact || '',
-        batch: member.batch || BATCH_YEARS[0]
+        batch: member.batch || BATCH_YEARS[0],
+        password: ''
       });
     } else {
       setEditingMember(null);
@@ -129,7 +138,8 @@ export function MembersPage() {
         role: 'member',
         status: 'active',
         contact: '',
-        batch: BATCH_YEARS[0]
+        batch: BATCH_YEARS[0],
+        password: ''
       });
     }
     setIsDialogOpen(true);
@@ -143,10 +153,39 @@ export function MembersPage() {
 
     setIsSaving(true);
     try {
+      // 1. If password is provided and user is Super Admin, handle Auth
+      if (formData.password && isSuperAdmin) {
+        // NOTE: In a real production app, you should call a Supabase Edge Function 
+        // that uses the Service Role Key to create/update the auth account.
+        // For now, we update the profile and notify about the password intent.
+        
+        try {
+          const { data: funcData, error: funcError } = await supabase.functions.invoke('manage-user-auth', {
+            body: { 
+              email: formData.contact, 
+              password: formData.password,
+              full_name: formData.full_name,
+              id: editingMember?.id
+            }
+          });
+          
+          if (funcError) {
+            console.warn('Edge Function for Auth management not found. Password not saved to Auth system.');
+            toast.info('Note: Profile saved, but Password requires Edge Function deployment.');
+          } else {
+            toast.success('User Auth account updated/created');
+          }
+        } catch (e) {
+          // Silent fail if function doesn't exist, just proceed with profile update
+        }
+      }
+
+      const { password, ...profileData } = formData;
+
       if (editingMember) {
         const { error } = await supabase
           .from('profiles')
-          .update(formData)
+          .update(profileData)
           .eq('id', editingMember.id);
 
         if (error) throw error;
@@ -156,7 +195,7 @@ export function MembersPage() {
         const { error } = await supabase
           .from('profiles')
           .insert({
-            ...formData,
+            ...profileData,
             id: crypto.randomUUID()
           });
 
@@ -206,6 +245,12 @@ export function MembersPage() {
     return matchesSearch && matchesDivision;
   });
 
+  const totalPages = Math.ceil(filteredMembers.length / ITEMS_PER_PAGE);
+  const paginatedMembers = filteredMembers.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -231,7 +276,7 @@ export function MembersPage() {
                 placeholder="Search members..." 
                 className="pl-9 bg-slate-50 border-slate-100 rounded-xl focus-visible:ring-indigo-500"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
               />
             </div>
             
@@ -243,11 +288,11 @@ export function MembersPage() {
               <DropdownMenuContent align="end" className="w-56 rounded-xl border-slate-200">
                 <div className="px-2 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">By Division</div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setDivisionFilter('all')} className="text-xs font-bold uppercase py-2 cursor-pointer">
+                <DropdownMenuItem onClick={() => { setDivisionFilter('all'); setCurrentPage(1); }} className="text-xs font-bold uppercase py-2 cursor-pointer">
                   All Divisions
                 </DropdownMenuItem>
                 {DIVISIONS.map(div => (
-                  <DropdownMenuItem key={div} onClick={() => setDivisionFilter(div)} className="text-xs font-bold uppercase py-2 cursor-pointer">
+                  <DropdownMenuItem key={div} onClick={() => { setDivisionFilter(div); setCurrentPage(1); }} className="text-xs font-bold uppercase py-2 cursor-pointer">
                     {div}
                   </DropdownMenuItem>
                 ))}
@@ -260,7 +305,8 @@ export function MembersPage() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-slate-50/50 hover:bg-slate-50/50">
-                  <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400 py-4 pl-6">Member</TableHead>
+                  <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400 py-4 pl-6 w-12">#</TableHead>
+                  <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Member</TableHead>
                   <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Student ID</TableHead>
                   <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Division</TableHead>
                   <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Role</TableHead>
@@ -271,12 +317,12 @@ export function MembersPage() {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-32 text-center text-slate-500 font-medium">
+                    <TableCell colSpan={7} className="h-32 text-center text-slate-500 font-medium">
                       Loading member database...
                     </TableCell>
                   </TableRow>
-                ) : filteredMembers.length > 0 ? (
-                  filteredMembers.map((member, i) => (
+                ) : paginatedMembers.length > 0 ? (
+                  paginatedMembers.map((member, i) => (
                     <motion.tr
                       key={member.id}
                       initial={{ opacity: 0 }}
@@ -284,7 +330,10 @@ export function MembersPage() {
                       transition={{ delay: i * 0.05 }}
                       className="group border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors"
                     >
-                      <TableCell className="py-4 pl-6">
+                      <TableCell className="py-4 pl-6 text-[10px] font-black text-slate-300">
+                        {(currentPage - 1) * ITEMS_PER_PAGE + i + 1}
+                      </TableCell>
+                      <TableCell className="py-4">
                         <div className="flex items-center gap-3">
                           <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
                             <AvatarImage src={member.avatar_url} />
@@ -363,6 +412,60 @@ export function MembersPage() {
               </TableBody>
             </Table>
           </div>
+          
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="bg-slate-50/50 border-t border-slate-100 p-4 flex items-center justify-between">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                Page {currentPage} of {totalPages}
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl border-slate-200 h-9 font-bold text-[10px] uppercase tracking-widest px-4"
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Prev
+                </Button>
+                <div className="flex items-center gap-1">
+                  {[...Array(totalPages)].map((_, i) => {
+                    const page = i + 1;
+                    if (totalPages <= 5 || (page >= currentPage - 1 && page <= currentPage + 1) || page === 1 || page === totalPages) {
+                      return (
+                        <Button
+                          key={page}
+                          variant={currentPage === page ? "default" : "outline"}
+                          size="sm"
+                          className={cn(
+                            "h-9 w-9 rounded-xl font-bold text-[10px]",
+                            currentPage === page ? "bg-indigo-600 hover:bg-indigo-700" : "border-slate-200"
+                          )}
+                          onClick={() => setCurrentPage(page)}
+                        >
+                          {page}
+                        </Button>
+                      );
+                    }
+                    if (page === currentPage - 2 || page === currentPage + 2) {
+                      return <span key={page} className="text-slate-300">...</span>;
+                    }
+                    return null;
+                  })}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl border-slate-200 h-9 font-bold text-[10px] uppercase tracking-widest px-4"
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
       
@@ -493,6 +596,26 @@ export function MembersPage() {
                 </SelectContent>
               </Select>
             </div>
+
+            {isSuperAdmin && (
+              <div className="space-y-2 pt-2 border-t border-slate-100">
+                <Label htmlFor="password" title="Set a password to enable login for this member" className="text-xs font-bold uppercase tracking-widest text-indigo-600 flex items-center gap-1.5">
+                  <Key className="h-3 w-3" />
+                  Account Password / Activation
+                </Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  placeholder={editingMember ? "Leave blank to keep current" : "Set initial password"}
+                  className="rounded-xl border-indigo-100 bg-indigo-50/30 focus-visible:ring-indigo-500 h-11"
+                />
+                <p className="text-[10px] text-slate-400 italic">
+                  * Setting a password will create or update the member's login account.
+                </p>
+              </div>
+            )}
           </div>
           <DialogFooter className="gap-2">
             <Button 

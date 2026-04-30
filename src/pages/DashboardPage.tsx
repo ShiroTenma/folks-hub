@@ -185,8 +185,8 @@ export function DashboardPage() {
       </div>
 
       {/* Main Visual Grid */}
-      <div className="grid gap-8 grid-cols-1 md:grid-cols-12">
-        <div className="md:col-span-8 space-y-8">
+      <div className="grid gap-6 md:gap-8 grid-cols-1 lg:grid-cols-12">
+        <div className="lg:col-span-8 space-y-6 md:space-y-8">
           {/* Monthly Cashflow Card */}
           <Card className="rounded-2xl border-slate-200 shadow-sm overflow-hidden bg-white">
             <CardHeader className="p-5 border-b border-slate-100 flex flex-row items-center justify-between">
@@ -196,37 +196,39 @@ export function DashboardPage() {
               </div>
               <BarChart3 className="h-5 w-5 text-indigo-500" />
             </CardHeader>
-            <CardContent className="p-6 h-[300px]">
-              {isLoading ? (
-                <div className="w-full h-full bg-slate-50 animate-pulse rounded-xl" />
-              ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={financeChartData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                    <XAxis 
-                      dataKey="name" 
-                      axisLine={false} 
-                      tickLine={false} 
-                      tick={{ fontSize: 10, fontWeight: 700, fill: '#94A3B8' }}
-                      dy={10}
-                    />
-                    <YAxis 
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fontSize: 10, fontWeight: 700, fill: '#94A3B8' }}
-                    />
-                    <Tooltip 
-                      cursor={{ fill: '#F8FAFC' }}
-                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
-                    />
-                    <Bar dataKey="amount" radius={[4, 4, 0, 0]}>
-                      {financeChartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={index === financeChartData.length - 1 ? '#4F46E5' : '#E2E8F0'} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
+            <CardContent className="p-6">
+              <div className="h-[300px] w-full relative">
+                {isLoading ? (
+                  <div className="w-full h-full bg-slate-50 animate-pulse rounded-xl" />
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={financeChartData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+                      <XAxis 
+                        dataKey="name" 
+                        axisLine={false} 
+                        tickLine={false} 
+                        tick={{ fontSize: 10, fontWeight: 700, fill: '#94A3B8' }}
+                        dy={10}
+                      />
+                      <YAxis 
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fontSize: 10, fontWeight: 700, fill: '#94A3B8' }}
+                      />
+                      <Tooltip 
+                        cursor={{ fill: '#F8FAFC' }}
+                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                      />
+                      <Bar dataKey="amount" radius={[4, 4, 0, 0]}>
+                        {financeChartData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={index === financeChartData.length - 1 ? '#4F46E5' : '#E2E8F0'} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
             </CardContent>
           </Card>
 

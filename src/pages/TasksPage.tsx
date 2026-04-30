@@ -17,7 +17,9 @@ import {
   CheckCircle2,
   Circle,
   Timer,
-  GripVertical
+  GripVertical,
+  Tag as TagIcon,
+  Layers
 } from 'lucide-react';
 import { 
   DropdownMenu, 
@@ -45,19 +47,23 @@ import {
   SelectValue 
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { supabase, type Task, type Profile } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { DIVISIONS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { createNotification } from '@/lib/notifications';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 type TaskStatus = 'todo' | 'in_progress' | 'done';
+
+const TASK_TAGS = ['Agenda', 'Proker', 'Meeting', 'Urgent', 'Regular'];
 
 export function TasksPage() {
   const [tasks, setTasks] = React.useState<Task[]>([]);
   const [profiles, setProfiles] = React.useState<Record<string, Profile>>({});
   const [isLoading, setIsLoading] = React.useState(true);
+  const [activeDivision, setActiveDivision] = React.useState<string>('all');
   
   // Task Form State
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
@@ -70,7 +76,8 @@ export function TasksPage() {
     division: DIVISIONS[0] as string,
     progress_percent: 0,
     deadline: '',
-    pic_id: 'unassigned'
+    pic_id: 'unassigned',
+    tags: [] as string[]
   });
 
   React.useEffect(() => {
@@ -108,10 +115,11 @@ export function TasksPage() {
       title: '',
       description: '',
       status: 'todo',
-      division: DIVISIONS[0],
+      division: activeDivision === 'all' ? DIVISIONS[0] : activeDivision,
       progress_percent: 0,
       deadline: new Date().toISOString().split('T')[0],
-      pic_id: 'unassigned'
+      pic_id: 'unassigned',
+      tags: []
     });
     setIsDialogOpen(true);
   };
@@ -125,7 +133,8 @@ export function TasksPage() {
       division: task.division,
       progress_percent: task.progress_percent,
       deadline: task.deadline ? new Date(task.deadline).toISOString().split('T')[0] : '',
-      pic_id: task.pic_id || 'unassigned'
+      pic_id: task.pic_id || 'unassigned',
+      tags: task.tags || []
     });
     setIsDialogOpen(true);
   };
@@ -228,14 +237,25 @@ export function TasksPage() {
     }
   };
 
-  const getTasksByStatus = (status: TaskStatus) => tasks.filter(t => t.status === status);
+  const toggleTag = (tag: string) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags.includes(tag) 
+        ? prev.tags.filter(t => t !== tag) 
+        : [...prev.tags, tag]
+    }));
+  };
+
+  const filteredTasks = tasks.filter(t => activeDivision === 'all' || t.division === activeDivision);
+
+  const getTasksByStatus = (status: TaskStatus) => filteredTasks.filter(t => t.status === status);
 
   const StatusColumn = ({ status, label }: { status: TaskStatus; label: string }) => {
     const [isOver, setIsOver] = React.useState(false);
 
     return (
       <div 
-        className="flex flex-col gap-4 w-full min-w-[300px]"
+        className="flex flex-col gap-4 w-full min-w-[320px] max-w-[400px]"
         onDragOver={(e) => {
           handleDragOver(e);
           setIsOver(true);
@@ -248,15 +268,15 @@ export function TasksPage() {
       >
         <div className="flex items-center justify-between px-2">
           <div className="flex items-center gap-2">
-            <h3 className="font-bold text-sm uppercase tracking-wider text-slate-500">{label}</h3>
-            <Badge variant="secondary" className="rounded-full px-2 h-5 text-[10px] bg-slate-100 text-slate-600 font-bold border-none">
+            <h3 className="font-bold text-xs uppercase tracking-widest text-slate-500">{label}</h3>
+            <Badge variant="secondary" className="rounded-full px-2 h-5 text-[10px] bg-white border border-slate-100 text-slate-600 font-bold">
               {isLoading ? '...' : getTasksByStatus(status).length}
             </Badge>
           </div>
           <Button 
             variant="ghost" 
             size="icon" 
-            className="h-8 w-8 text-slate-400"
+            className="h-8 w-8 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"
             onClick={() => {
               handleOpenAddDialog();
               setFormData(prev => ({ ...prev, status }));
@@ -267,129 +287,135 @@ export function TasksPage() {
         </div>
         
         <div className={cn(
-          "flex flex-col gap-3 min-h-[500px] transition-all rounded-2xl p-1",
-          isOver ? "bg-indigo-50/50 ring-2 ring-indigo-200 ring-dashed" : ""
+          "flex flex-col gap-4 min-h-[600px] transition-all rounded-3xl p-2",
+          isOver ? "bg-indigo-50/50 ring-2 ring-indigo-200 ring-dashed" : "bg-slate-50/50 border border-transparent"
         )}>
           {isLoading ? (
             <div className="flex flex-col gap-3">
               {[1, 2, 3].map(i => (
-                <div key={i} className="h-32 bg-slate-50 border border-slate-100 rounded-2xl animate-pulse"></div>
+                <div key={i} className="h-32 bg-white border border-slate-100 rounded-2xl animate-pulse shadow-sm"></div>
               ))}
             </div>
           ) : getTasksByStatus(status).length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-100 rounded-2xl h-32 bg-slate-50/30">
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-400">No tasks here</p>
+            <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-200 rounded-3xl h-32 bg-white/50">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">No tasks here</p>
             </div>
           ) : (
-            getTasksByStatus(status).map((task, i) => (
-              <motion.div
-                key={task.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-                className="relative"
-              >
-                <Card 
-                  className="group hover:border-indigo-200 transition-all shadow-sm hover:shadow-md rounded-2xl overflow-hidden border-slate-200 bg-white"
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, task.id)}
-                  onDragEnd={handleDragEnd}
+            <AnimatePresence mode="popLayout">
+              {getTasksByStatus(status).map((task, i) => (
+                <motion.div
+                  key={task.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  className="relative"
                 >
-                  <CardContent className="p-4 space-y-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500 transition-colors">
-                          <GripVertical className="h-4 w-4" />
+                  <Card 
+                    className="group hover:border-indigo-200 transition-all shadow-sm hover:shadow-xl rounded-2xl overflow-hidden border-slate-200 bg-white"
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, task.id)}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <CardContent className="p-4 space-y-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex flex-wrap gap-1.5 max-w-[80%]">
+                          <span className="text-[9px] font-black uppercase tracking-tighter px-2 py-0.5 rounded bg-indigo-600 text-white">
+                            {task.division}
+                          </span>
+                          {task.tags?.map(tag => (
+                            <span key={tag} className="text-[9px] font-black uppercase tracking-tighter px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 border border-emerald-100">
+                              {tag}
+                            </span>
+                          ))}
                         </div>
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600">
-                          {task.division}
-                        </span>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors">
+                            <MoreVertical className="h-3 w-3" />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="rounded-xl w-48 shadow-lg">
+                            <div className="px-2 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400">Manage Task</div>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-sm font-medium py-2" onClick={() => handleOpenEditDialog(task)}>
+                              <Edit2 className="mr-2 h-4 w-4 text-slate-400" />
+                              Edit Details
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              className="text-sm font-medium py-2"
+                              onClick={() => handleUpdateTaskStatus(task.id, 'todo', task.title)}
+                              disabled={task.status === 'todo'}
+                            >
+                              <Circle className="mr-2 h-4 w-4 text-slate-400" />
+                              Move to To Do
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              className="text-sm font-medium py-2"
+                              onClick={() => handleUpdateTaskStatus(task.id, 'in_progress', task.title)}
+                              disabled={task.status === 'in_progress'}
+                            >
+                              <Timer className="mr-2 h-4 w-4 text-amber-500" />
+                              Move to In Progress
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              className="text-sm font-medium py-2"
+                              onClick={() => handleUpdateTaskStatus(task.id, 'done', task.title)}
+                              disabled={task.status === 'done'}
+                            >
+                              <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-500" />
+                              Move to Done
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              className="text-sm font-bold text-rose-600 py-2"
+                              onClick={() => handleDeleteTask(task.id, task.title)}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete Task
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors">
-                          <MoreHorizontal className="h-3 w-3" />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="rounded-xl w-48 shadow-lg">
-                          <div className="px-2 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400">Manage Task</div>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-sm font-medium py-2" onClick={() => handleOpenEditDialog(task)}>
-                            <Edit2 className="mr-2 h-4 w-4 text-slate-400" />
-                            Edit Details
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem 
-                            className="text-sm font-medium py-2"
-                            onClick={() => handleUpdateTaskStatus(task.id, 'todo', task.title)}
-                            disabled={task.status === 'todo'}
-                          >
-                            <Circle className="mr-2 h-4 w-4 text-slate-400" />
-                            Move to To Do
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            className="text-sm font-medium py-2"
-                            onClick={() => handleUpdateTaskStatus(task.id, 'in_progress', task.title)}
-                            disabled={task.status === 'in_progress'}
-                          >
-                            <Timer className="mr-2 h-4 w-4 text-amber-500" />
-                            Move to In Progress
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            className="text-sm font-medium py-2"
-                            onClick={() => handleUpdateTaskStatus(task.id, 'done', task.title)}
-                            disabled={task.status === 'done'}
-                          >
-                            <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-500" />
-                            Move to Done
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem 
-                            className="text-sm font-bold text-rose-600 py-2"
-                            onClick={() => handleDeleteTask(task.id, task.title)}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete Task
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                    
-                    <div>
-                      <h4 className="text-sm font-bold leading-tight mb-1 text-slate-900">{task.title}</h4>
-                      {task.description && (
-                        <p className="text-xs text-slate-500 line-clamp-2 font-medium">{task.description}</p>
-                      )}
-                    </div>
+                      
+                      <div>
+                        <h4 className="text-sm font-bold leading-tight mb-1 text-slate-900 line-clamp-2">{task.title}</h4>
+                        {task.description && (
+                          <p className="text-[11px] text-slate-500 line-clamp-2 font-medium leading-relaxed">{task.description}</p>
+                        )}
+                      </div>
 
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-[10px] uppercase font-bold tracking-widest text-slate-400">
-                        <span>Progress</span>
-                        <span className="text-slate-900">{task.progress_percent}%</span>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-[9px] uppercase font-black tracking-[0.2em] text-slate-400">
+                          <span>Progress</span>
+                          <span className="text-indigo-600">{task.progress_percent}%</span>
+                        </div>
+                        <Progress value={task.progress_percent} className="h-1.5 bg-slate-100" />
                       </div>
-                      <Progress value={task.progress_percent} className="h-1.5 bg-slate-100" />
-                    </div>
 
-                    <div className="flex items-center justify-between pt-3 border-t border-slate-50 mt-2">
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-6 w-6 border border-white shadow-sm">
-                          <AvatarFallback className="text-[8px] font-black bg-slate-100 text-slate-600">
-                            {task.pic_id ? (profiles[task.pic_id]?.full_name?.split(' ').map(n => n[0]).join('') || '?') : '?'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="text-[10px] font-bold text-slate-600">
-                          {task.pic_id ? (profiles[task.pic_id]?.full_name?.split(' ')[0] || 'Unassigned') : 'Unassigned'}
-                        </span>
+                      <div className="flex items-center justify-between pt-3 border-t border-slate-50 mt-2">
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-6 w-6 ring-2 ring-white shadow-sm">
+                            <AvatarFallback className="text-[8px] font-black bg-indigo-600 text-white">
+                              {task.pic_id ? (profiles[task.pic_id]?.full_name?.split(' ').map(n => n[0]).join('') || '?') : '?'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-[10px] font-black text-slate-600 uppercase tracking-tight">
+                            {task.pic_id ? (profiles[task.pic_id]?.full_name?.split(' ')[0] || 'Unassigned') : 'Unassigned'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-slate-400">
+                          <Clock className="h-3 w-3" />
+                          <span className="text-[9px] font-black uppercase tracking-widest">
+                            {task.deadline ? new Date(task.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'No Date'}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1.5 text-slate-400">
-                        <Clock className="h-3 w-3" />
-                        <span className="text-[10px] font-bold uppercase">
-                          {task.deadline ? new Date(task.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'No Date'}
-                        </span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </AnimatePresence>
           )}
         </div>
       </div>
@@ -397,47 +423,64 @@ export function TasksPage() {
   };
 
   return (
-    <div className="space-y-6 overflow-hidden">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Task Board</h1>
-          <p className="text-slate-500 text-sm">Track and manage division programs.</p>
+    <div className="space-y-8 pb-12">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+            <Layers className="h-6 w-6 text-indigo-600" />
+            Task Board
+          </h1>
+          <p className="text-slate-500 text-sm font-medium">Coordinate and track division progress in real-time.</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" className="gap-2 rounded-xl border-slate-200 text-slate-600 font-bold text-xs uppercase tracking-widest h-10 px-4 transition-all">
-            <FilterIcon className="h-4 w-4" />
-            Filter
-          </Button>
+        <div className="flex items-center gap-3">
           <Button 
-            className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-sm h-10 px-4 text-xs uppercase tracking-widest transition-all active:scale-95"
+            className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-100 h-11 px-6 text-xs uppercase tracking-widest transition-all active:scale-95"
             onClick={handleOpenAddDialog}
           >
             <Plus className="h-4 w-4" />
-            NEW TASK
+            CREATE NEW TASK
           </Button>
         </div>
       </div>
 
-      <div className="flex gap-6 pb-6 overflow-x-auto scrollbar-hide">
-        <StatusColumn status="todo" label="To Do" />
-        <StatusColumn status="in_progress" label="In Progress" />
-        <StatusColumn status="done" label="Completed" />
+      <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm inline-flex w-full md:w-auto">
+        <Tabs value={activeDivision} onValueChange={setActiveDivision} className="w-full">
+          <TabsList variant="line" className="flex-wrap h-auto p-1 gap-1">
+            <TabsTrigger value="all" className="rounded-xl font-bold uppercase text-[10px] tracking-widest px-6 h-9">
+              All Divisions
+            </TabsTrigger>
+            {DIVISIONS.map(div => (
+              <TabsTrigger key={div} value={div} className="rounded-xl font-bold uppercase text-[10px] tracking-widest px-6 h-9">
+                {div}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+      </div>
+
+      <div className="flex gap-8 pb-6 overflow-x-auto scrollbar-hide">
+        <StatusColumn status="todo" label="To Do List" />
+        <StatusColumn status="in_progress" label="Ongoing Development" />
+        <StatusColumn status="done" label="Finalized & Done" />
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[500px] rounded-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-slate-900">
-              {editingTask ? 'Edit Task' : 'Create New Task'}
-            </DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4 py-4">
+        <DialogContent className="sm:max-w-[550px] rounded-3xl p-0 overflow-hidden border-none shadow-2xl">
+          <div className="bg-slate-900 p-6 text-white flex items-center justify-between">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold flex items-center gap-2">
+                <Plus className="h-5 w-5 text-indigo-400" />
+                {editingTask ? 'Edit Organization Task' : 'Create New Organization Task'}
+              </DialogTitle>
+            </DialogHeader>
+          </div>
+          <form onSubmit={handleSubmit} className="p-8 space-y-6 bg-white">
             <div className="space-y-2">
-              <Label htmlFor="title" className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-black">Title</Label>
+              <Label htmlFor="title" className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-black">Main Task Title</Label>
               <Input 
                 id="title" 
-                placeholder="Task title" 
-                className="h-11 rounded-xl border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/10 transition-all"
+                placeholder="What needs to be done?" 
+                className="h-12 rounded-xl border-slate-200 bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium"
                 value={formData.title} 
                 onChange={e => setFormData({ ...formData, title: e.target.value })}
                 required
@@ -445,24 +488,24 @@ export function TasksPage() {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="description" className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-black">Description</Label>
+              <Label htmlFor="description" className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-black">Detailed Context</Label>
               <Textarea 
                 id="description" 
-                placeholder="Task description" 
-                className="min-h-24 rounded-xl border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/10 transition-all"
+                placeholder="Describe the goals and requirements..." 
+                className="min-h-24 rounded-xl border-slate-200 bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium leading-relaxed"
                 value={formData.description} 
                 onChange={e => setFormData({ ...formData, description: e.target.value })}
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-black">Division</Label>
+                <Label className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-black">Responsible Division</Label>
                 <Select 
                   value={formData.division} 
                   onValueChange={value => setFormData({ ...formData, division: value })}
                 >
-                  <SelectTrigger className="h-11 rounded-xl border-slate-200">
+                  <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-slate-50">
                     <SelectValue placeholder="Select division" />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl border-slate-200">
@@ -474,13 +517,13 @@ export function TasksPage() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-black">PIC</Label>
+                <Label className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-black">Person In Charge (PIC)</Label>
                 <Select 
                   key={`pic-select-${Object.keys(profiles).length}-${formData.pic_id}`}
                   value={formData.pic_id} 
                   onValueChange={value => setFormData({ ...formData, pic_id: value })}
                 >
-                  <SelectTrigger className="h-11 rounded-xl border-slate-200">
+                  <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-slate-50">
                     <SelectValue>
                       {formData.pic_id !== 'unassigned' && profiles[formData.pic_id] 
                         ? profiles[formData.pic_id].full_name 
@@ -497,14 +540,35 @@ export function TasksPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-3">
+              <Label className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-black">Quick Tags (Agenda / Proker)</Label>
+              <div className="flex flex-wrap gap-2">
+                {TASK_TAGS.map(tag => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => toggleTag(tag)}
+                    className={cn(
+                      "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border",
+                      formData.tags.includes(tag)
+                        ? "bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-100 scale-105"
+                        : "bg-white border-slate-100 text-slate-400 hover:border-slate-200"
+                    )}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
               <div className="space-y-2">
-                <Label className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-black">Status</Label>
+                <Label className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-black">Execution Status</Label>
                 <Select 
                   value={formData.status} 
                   onValueChange={value => setFormData({ ...formData, status: value as TaskStatus })}
                 >
-                  <SelectTrigger className="h-11 rounded-xl border-slate-200">
+                  <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-slate-50">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl border-slate-200">
@@ -516,21 +580,21 @@ export function TasksPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="deadline" className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-black">Deadline</Label>
+                <Label htmlFor="deadline" className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-black">Target Deadline</Label>
                 <Input 
                   id="deadline" 
                   type="date" 
-                  className="h-11 rounded-xl border-slate-200"
+                  className="h-12 rounded-xl border-slate-200 bg-slate-50"
                   value={formData.deadline} 
                   onChange={e => setFormData({ ...formData, deadline: e.target.value })}
                 />
               </div>
             </div>
 
-            <div className="space-y-4 pt-2">
+            <div className="space-y-4 pt-4 border-t border-slate-50">
               <div className="flex items-center justify-between">
-                <Label htmlFor="progress" className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-black">Progress</Label>
-                <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">{formData.progress_percent}%</span>
+                <Label htmlFor="progress" className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-black">Completion Rate</Label>
+                <span className="text-sm font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">{formData.progress_percent}%</span>
               </div>
               <input 
                 id="progress"
@@ -538,17 +602,17 @@ export function TasksPage() {
                 min="0"
                 max="100"
                 step="5"
-                className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
                 value={formData.progress_percent}
                 onChange={e => setFormData({ ...formData, progress_percent: parseInt(e.target.value) })}
               />
             </div>
 
-            <DialogFooter className="pt-6 gap-2 sm:gap-0">
+            <DialogFooter className="pt-8 gap-3 sm:gap-0">
               <Button 
                 type="button" 
                 variant="ghost" 
-                className="rounded-xl font-bold text-[10px] uppercase tracking-widest text-slate-500 hover:text-slate-900" 
+                className="rounded-xl font-bold text-[10px] uppercase tracking-widest text-slate-400 hover:text-slate-900 h-12 px-6" 
                 onClick={() => setIsDialogOpen(false)}
               >
                 Cancel
@@ -556,9 +620,14 @@ export function TasksPage() {
               <Button 
                 type="submit" 
                 disabled={isSubmitting} 
-                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest h-11 px-8 shadow-sm shadow-indigo-200 transition-all active:scale-[0.98]"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest h-12 px-10 shadow-lg shadow-indigo-100 transition-all active:scale-[0.98]"
               >
-                {isSubmitting ? 'Saving...' : (editingTask ? 'Update Task' : 'Create Task')}
+                {isSubmitting ? (
+                  <div className="flex items-center gap-2">
+                    <Timer className="h-4 w-4 animate-spin" />
+                    Processing...
+                  </div>
+                ) : (editingTask ? 'Save Changes' : 'Publish Task')}
               </Button>
             </DialogFooter>
           </form>

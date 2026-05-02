@@ -106,9 +106,10 @@ export function TransactionForm({ isOpen, onClose, onSuccess, editingTransaction
         .getPublicUrl(filePath);
 
       setFormData(prev => ({ ...prev, receipt_url: publicUrl }));
-      toast.success('Receipt uploaded!');
+      toast.success('Receipt uploaded successfully');
     } catch (error: any) {
-      toast.error('Upload failed: ' + error.message);
+      console.error('Receipt Upload Error:', error);
+      toast.error('Upload failed: ' + (error.message || 'Check your connection'));
     } finally {
       setIsUploading(false);
     }
@@ -165,7 +166,8 @@ export function TransactionForm({ isOpen, onClose, onSuccess, editingTransaction
 
       onSuccess();
     } catch (err: any) {
-      toast.error(err.message);
+      console.error('Transaction Submit Error:', err);
+      toast.error('Submission failed: ' + (err.message || 'Check your connection'));
     } finally {
       setIsSubmitting(false);
     }

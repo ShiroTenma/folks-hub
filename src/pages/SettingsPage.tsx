@@ -18,8 +18,10 @@ import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 
 export default function SettingsPage() {
+  useDocumentTitle('Settings');
   const { profile } = useAuthStore();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -66,7 +68,7 @@ export default function SettingsPage() {
 
   const handleSave = async () => {
     if (!isAdmin) {
-      toast.error('Unauthorized');
+      toast.error('Unauthorized: Admin access required');
       return;
     }
 
@@ -90,8 +92,10 @@ export default function SettingsPage() {
       }
 
       toast.success('Settings updated successfully');
+      await fetchSettings(); // Refresh to ensure UI matches DB
     } catch (error: any) {
-      toast.error('Save failed: ' + error.message);
+      console.error('Settings Save Error:', error);
+      toast.error('Failed to save settings: ' + (error.message || 'Unknown error occurred'));
     } finally {
       setIsSaving(false);
     }

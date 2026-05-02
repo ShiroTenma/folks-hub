@@ -27,8 +27,10 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/lib/utils';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 
 export default function SplitBillPage() {
+  useDocumentTitle('Split Bill');
   const { user, profile } = useAuthStore();
   const [bills, setBills] = useState<any[]>([]);
   const [members, setMembers] = useState<any[]>([]);
@@ -71,7 +73,8 @@ export default function SplitBillPage() {
       setBills(billsRes.data || []);
       setMembers(memRes.data || []);
     } catch (error: any) {
-      toast.error('Failed to load data: ' + error.message);
+      console.error('Fetch Data Error:', error);
+      toast.error('Failed to load split bills: ' + (error.message || 'Check connection'));
     } finally {
       setIsLoading(false);
     }
@@ -114,9 +117,11 @@ export default function SplitBillPage() {
 
       toast.success('Split bill created successfully!');
       setIsCreateOpen(false);
-      fetchData();
+      setNewBill({ title: '', description: '', total_amount: 0, selected_members: [] });
+      await fetchData();
     } catch (error: any) {
-      toast.error('Creation failed: ' + error.message);
+      console.error('Create Bill Error:', error);
+      toast.error('Creation failed: ' + (error.message || 'Check connection'));
     } finally {
       setIsSubmitting(false);
     }
@@ -148,9 +153,10 @@ export default function SplitBillPage() {
 
       toast.success('Proof uploaded! Waiting for verification.');
       setIsUploadOpen(false);
-      fetchData();
+      await fetchData();
     } catch (error: any) {
-      toast.error('Upload failed: ' + error.message);
+      console.error('Upload Proof Error:', error);
+      toast.error('Upload failed: ' + (error.message || 'Check connection'));
     } finally {
       setIsUploading(false);
     }
@@ -160,10 +166,11 @@ export default function SplitBillPage() {
     try {
       const { error } = await supabase.from('split_bill_items').update({ status }).eq('id', id);
       if (error) throw error;
-      toast.success(`Payment ${status}`);
-      fetchData();
+      toast.success(`Payment marked as ${status}`);
+      await fetchData();
     } catch (error: any) {
-      toast.error('Error: ' + error.message);
+      console.error('Update Status Error:', error);
+      toast.error('Update failed: ' + (error.message || 'Check connection'));
     }
   };
 

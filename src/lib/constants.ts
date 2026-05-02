@@ -22,4 +22,12 @@ export const ROLES = [
 
 export type RoleId = typeof ROLES[number]['id'];
 
-export const BATCH_YEARS = ['2022', '2023', '2024', '2025'] as const;
+export const BATCH_YEARS = ['2022', '2023', '2024', '2025',  '2026'] as const;
+
+export const LEDGER_EVENTS = [
+  'Opening Balance', 'WP', 'Equipment', 'Misc', 'Cash', 
+  'Operational Expense', 'WP Staff', 'Merchandise', 
+  'Sertijab', 'PnC', 'Open House', 'Commission', 'SPIN Etam',
+];
+
+export const PAYMENT_TYPES = ['DANA', 'BNI', 'Cash'];

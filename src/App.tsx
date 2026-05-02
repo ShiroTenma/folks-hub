@@ -18,7 +18,7 @@ const SplitBillPage = lazy(() => import('@/pages/SplitBillPage'));
 const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
 const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'));
 const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
-const NotFoundPage = lazy(() => import('@/pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
+const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 
 export default function App() {
   const { user } = useAuthStore();
@@ -33,18 +33,21 @@ export default function App() {
       <Toaster position="top-center" richColors closeButton />
       <Suspense fallback={<LoadingScreen />}>
         <Routes>
-          {/* Public Routes */}
-          {!user ? (
-            <>
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/signup" element={<RegisterPage />} />
-              <Route path="*" element={<Navigate to="/login" replace />} />
-            </>
-          ) : (
-            /* Protected Routes wrapped in AppShell */
-            <Route
-              path="*"
-              element={
+          {/* Public access logic handled within elements */}
+          <Route 
+            path="/login" 
+            element={user ? <Navigate to="/dashboard" replace /> : <LoginPage />} 
+          />
+          <Route 
+            path="/signup" 
+            element={user ? <Navigate to="/dashboard" replace /> : <RegisterPage />} 
+          />
+
+          {/* Protected Routes wrapped in AppShell */}
+          <Route
+            path="/*"
+            element={
+              user ? (
                 <AppShell>
                   <Routes>
                     <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -63,9 +66,11 @@ export default function App() {
                     <Route path="*" element={<NotFoundPage />} />
                   </Routes>
                 </AppShell>
-              }
-            />
-          )}
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
         </Routes>
       </Suspense>
     </BrowserRouter>

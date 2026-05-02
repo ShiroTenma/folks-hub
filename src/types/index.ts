@@ -7,7 +7,7 @@ export type Profile = {
   division: string;
   batch: string;
   role: RoleId;
-  status: 'active' | 'inactive';
+  status: 'active' | 'inactive' | 'pending';
   contact: string;
   avatar_url?: string;
   created_at: string;

@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -19,6 +20,7 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export function LoginPage() {
+  useDocumentTitle('Login');
   const [isLoading, setIsLoading] = React.useState(false);
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormValues>({
@@ -96,9 +98,6 @@ export function LoginPage() {
               <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl h-11 shadow-lg shadow-indigo-600/20 transition-all active:scale-95" disabled={isLoading}>
                 {isLoading ? 'Authenticating...' : 'Sign In to Hub'}
               </Button>
-              <p className="text-xs text-slate-500 font-medium">
-                Don't have an account? <Link to="/signup" className="text-indigo-600 font-bold hover:underline">Register Now</Link>
-              </p>
             </CardFooter>
           </form>
         </Card>

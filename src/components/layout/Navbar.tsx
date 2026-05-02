@@ -20,7 +20,38 @@ interface NavbarProps {
 
 export function Navbar({ onMenuClick }: NavbarProps) {
   const { user, profile } = useAuthStore();
+  const [hasUnread, setHasUnread] = React.useState(false);
   
+  React.useEffect(() => {
+    if (!user) return;
+    
+    const checkUnread = async () => {
+      const { count } = await supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('read', false);
+      
+      setHasUnread((count || 0) > 0);
+    };
+
+    checkUnread();
+
+    const subscription = supabase
+      .channel('unread_notifications')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'notifications',
+        filter: `user_id=eq.${user.id}`
+      }, checkUnread)
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [user]);
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
   };
@@ -53,7 +84,9 @@ export function Navbar({ onMenuClick }: NavbarProps) {
         <Link to="/notifications">
           <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full hover:bg-slate-100 relative">
             <Bell className="h-5 w-5 text-slate-500" />
-            <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+            {hasUnread && (
+              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
+            )}
           </Button>
         </Link>
         

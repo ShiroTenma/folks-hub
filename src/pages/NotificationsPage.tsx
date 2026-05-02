@@ -8,8 +8,10 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 
 export default function NotificationsPage() {
+  useDocumentTitle('Notifications');
   const [notifications, setNotifications] = React.useState<any[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -44,10 +46,11 @@ export default function NotificationsPage() {
         .eq('read', false);
       
       if (error) throw error;
-      fetchNotifications();
-      toast.success('All marked as read');
-    } catch (err) {
-      toast.error('Failed to update notifications');
+      await fetchNotifications();
+      toast.success('All notifications marked as read');
+    } catch (err: any) {
+      console.error('Mark All Read Error:', err);
+      toast.error('Failed to update notifications: ' + (err.message || 'Check connection'));
     }
   };
 
@@ -59,9 +62,11 @@ export default function NotificationsPage() {
         .eq('id', id);
       
       if (error) throw error;
-      setNotifications(notifications.filter(n => n.id !== id));
-    } catch (err) {
-      toast.error('Failed to delete notification');
+      setNotifications(prev => prev.filter(n => n.id !== id));
+      toast.success('Notification deleted');
+    } catch (err: any) {
+      console.error('Delete Notification Error:', err);
+      toast.error('Failed to delete notification: ' + (err.message || 'Check connection'));
     }
   };
 

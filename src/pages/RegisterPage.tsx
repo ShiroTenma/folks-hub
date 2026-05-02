@@ -10,8 +10,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { DIVISIONS, APP_CONFIG } from '@/lib/constants';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import { createNotification } from '@/lib/notifications';
 
 const registerSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -24,12 +26,20 @@ const registerSchema = z.object({
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export function RegisterPage() {
+  useDocumentTitle('Register');
   const [isLoading, setIsLoading] = React.useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const divisionParam = searchParams.get('division');
 
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm<RegisterFormValues>({
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
+    defaultValues: {
+      division: divisionParam || '',
+    }
   });
+
+  const selectedDivision = watch('division');
 
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
@@ -58,7 +68,7 @@ export function RegisterPage() {
             student_id: data.studentId,
             division: data.division,
             role: 'member', // Default role
-            status: 'active',
+            status: 'pending',
             batch: new Date().getFullYear().toString(),
             contact: data.email
           });
@@ -67,7 +77,14 @@ export function RegisterPage() {
           console.warn('Profile creation error (might be handled by DB triggers):', profileError);
         }
 
-        toast.success('Registration successful! Please check your email or login.');
+        // Notify admins
+        await createNotification(
+          'New Member Request',
+          `${data.fullName} has requested to join ${data.division}. Approval required.`,
+          'info'
+        );
+
+        toast.success('Registration request sent! Please wait for admin approval.');
         navigate('/login');
       }
     } catch (err: any) {
@@ -91,7 +108,9 @@ export function RegisterPage() {
             <div className="w-6 h-6 border-4 border-white rounded-md"></div>
           </div>
           <h1 className="text-3xl font-black tracking-tighter text-slate-900">JOIN {APP_CONFIG.NAME}</h1>
-          <p className="text-slate-500 text-sm mt-2 font-medium">Create your member account</p>
+          <p className="text-slate-500 text-sm mt-2 font-medium">
+            {divisionParam ? `Joining ${divisionParam} Division` : 'Create your member account'}
+          </p>
         </div>
 
         <Card className="border-slate-200 shadow-xl shadow-slate-200/50 rounded-2xl overflow-hidden bg-white">
@@ -126,7 +145,11 @@ export function RegisterPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="division" className="text-xs font-bold uppercase tracking-widest text-slate-400">Division</Label>
-                <Select onValueChange={(val: string) => setValue('division', val)}>
+                <Select 
+                  onValueChange={(val: string) => setValue('division', val)} 
+                  defaultValue={divisionParam || undefined}
+                  disabled={!!divisionParam}
+                >
                   <SelectTrigger className="bg-slate-50 border-slate-100 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all rounded-xl h-11">
                     <SelectValue placeholder="Select your division" />
                   </SelectTrigger>
@@ -136,6 +159,7 @@ export function RegisterPage() {
                     ))}
                   </SelectContent>
                 </Select>
+                {divisionParam && <input type="hidden" {...register('division')} />}
                 {errors.division && <p className="text-[10px] font-bold text-red-500 uppercase tracking-tight">{errors.division.message}</p>}
               </div>
 
@@ -164,7 +188,7 @@ export function RegisterPage() {
             </CardContent>
             <CardFooter className="flex flex-col gap-4 pb-8">
               <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl h-11 shadow-lg shadow-indigo-600/20 transition-all active:scale-95" disabled={isLoading}>
-                {isLoading ? 'Creating Account...' : 'Register as Member'}
+                {isLoading ? 'Processing Request...' : 'Send Join Request'}
               </Button>
               <p className="text-xs text-slate-500 font-medium">
                 Already have an account? <Link to="/login" className="text-indigo-600 font-bold hover:underline">Sign In</Link>

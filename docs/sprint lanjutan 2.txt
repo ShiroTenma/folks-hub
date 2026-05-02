@@ -1,23 +1,23 @@
 SECTION 5 — PHASE 2 DETAILS
 
 1. Calendar (SETELAH AGENDA DAN TASK KELAR SIH)
-- monthly / weekly view
-- all agendas
-- division filter
-- Google Calendar sync ready
-- reminders ready
+- monthly / weekly / daily view
+- all agendas & division filter
+- Google Calendar bidirectional sync ready
+- automated push/email reminders ready
+- conflict detection (preventing overlapping events)
 
 2. Document Management (TERAKHIRAN PLS)
-- auto numbering
+- auto numbering & indexing
 - templates:
   invitation
   permission letter
   proposal
   LPJ/report
-- digital signature
-- export PDF
-- archive
-- approvals
+- digital signature & approval workflows
+- export PDF & Docx
+- archive & version control
+- document collaboration / comment system
 
 3. File Archive (SETELAH DOCUMENT MANAGEMENT)
 Folders:
@@ -26,41 +26,43 @@ Folders:
 - design assets
 - documentation
 - templates
+Features:
+- role-based access control (RBAC) per folder
+- global search for files and metadata
 
 4. Announcements (PRIORITAS)
-- admin posting
-- pin important notices
-- read status
+- admin posting with rich text and attachments
+- pin important notices (sticky announcements)
+- read status / acknowledgment tracking
+- push notifications for high-priority alerts
 
 
 SECTION 6 — PHASE 3 DETAILS
 
 1. POS / Product
-- CRUD products
-- stock tracking
-- variants
-- cash / QRIS
-- sales history
-- revenue analytics
+- CRUD products & variants
+- stock tracking with low-stock automated alerts
+- cash / QRIS payment processing
+- sales history & revenue analytics
+- *Suggestion from Ansel*: Integrate direct financial reporting / automated ledger sync from POS sales
 
 2. Attendance
-- location check-in
-- geofence ready
+- location check-in & geofence ready
 - selfie proof
-- history
-- event attendance
+- history & reporting
+- event attendance with QR Code generation
 
 3. Inventory 
-- item list
-- quantity
-- condition
-- borrowed by
-- return tracking
+- item list & quantity
+- condition logging
+- borrowed by (check-out / check-in system)
+- return tracking & deadline alerts
+- barcode/QR tracking for physical assets
+
 
 SECTION 7 — UI / UX REQUIREMENTS
 
 Use modern admin dashboard design:
-
 - Sidebar navigation
 - Top navbar
 - Card layouts

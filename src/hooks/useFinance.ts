@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { LEDGER_EVENTS, PAYMENT_TYPES } from '@/lib/constants';
-import { parseFinanceCSV } from '@/lib/csv-parser';
 
 export function useFinance() {
   const [transactions, setTransactions] = useState<any[]>([]);
@@ -26,8 +25,15 @@ export function useFinance() {
       setBudgets(budgetRes.data || []);
 
       settingsRes.data?.forEach(s => {
-        if (s.key === 'ledger_events') setEvents(s.value);
-        if (s.key === 'ledger_payment_types') setPaymentTypes(s.value);
+        let parsedValue: any = s.value;
+        try {
+          if (typeof s.value === 'string' && (s.value.startsWith('[') || s.value.startsWith('{'))) {
+            parsedValue = JSON.parse(s.value);
+          }
+        } catch (e) {}
+
+        if (s.key === 'ledger_events') setEvents(Array.isArray(parsedValue) ? parsedValue : []);
+        if (s.key === 'ledger_payment_types') setPaymentTypes(Array.isArray(parsedValue) ? parsedValue : []);
       });
 
     } catch (err: any) {
@@ -160,33 +166,6 @@ export function useFinance() {
     toast.success('Exporting ledger to CSV...');
   };
 
-  const processImport = async (e: React.ChangeEvent<HTMLInputElement>, canApprove: boolean) => {
-    if (!e.target.files?.length) return;
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      try {
-        const text = event.target?.result as string;
-        const data = parseFinanceCSV(text, canApprove);
-
-        if (data.length === 0) {
-          toast.error('No valid data found in CSV');
-          return;
-        }
-
-        const { error } = await supabase.from('transactions').insert(data);
-        if (error) throw error;
-        
-        toast.success(`Imported ${data.length} records. ${!canApprove ? 'Waiting for approval.' : ''}`);
-        await fetchData();
-      } catch (err: any) {
-        console.error('Import Error:', err);
-        toast.error('Import failed: ' + (err.message || 'Check console'));
-      }
-    };
-    reader.readAsText(file);
-  };
-
   const transactionsWithBalance = useMemo(() => {
     let current = 0;
     return transactions
@@ -223,8 +202,7 @@ export function useFinance() {
     handleDelete,
     handleDeleteAll,
     getSourceBalance,
-    exportToCSV,
-    processImport
+    exportToCSV
   };
 }
 

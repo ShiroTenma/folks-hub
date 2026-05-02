@@ -100,7 +100,7 @@ export function useDashboard(selectedMonth: string, selectedYear: string) {
 
       const expCategories: Record<string, number> = {};
       const incCategories: Record<string, number> = {};
-      
+
       approvedFiltered.forEach(t => {
         const cat = t.event_type || t.category || 'General';
         if (t.type === 'expense') {
@@ -113,11 +113,11 @@ export function useDashboard(selectedMonth: string, selectedYear: string) {
       const expenseBreakdown = Object.entries(expCategories)
         .map(([name, value]) => ({ name, value }))
         .sort((a, b) => b.value - a.value);
-        
+
       const incomeBreakdown = Object.entries(incCategories)
         .map(([name, value]) => ({ name, value }))
         .sort((a, b) => b.value - a.value);
-      
+
       const highest = expenseBreakdown[0] || { name: 'None', value: 0 };
 
       const globalApprovedTrans = allTrans.filter(t => t.status === 'approved');

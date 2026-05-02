@@ -1,7 +1,6 @@
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Filter as FilterIcon, Layers, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DIVISIONS } from '@/lib/constants';
 
@@ -17,15 +16,15 @@ export function TaskFilters({
   onAddTask
 }: TaskFiltersProps) {
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-      <div className="flex items-center gap-4 overflow-x-auto no-scrollbar py-2">
+    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-12">
+      <div className="flex items-center gap-4 overflow-x-auto custom-scrollbar pb-2 lg:pb-0">
         <Tabs value={activeDivision} onValueChange={onDivisionChange} className="w-auto">
-          <TabsList className="bg-slate-100 p-1 rounded-2xl border border-slate-200 h-12">
-            <TabsTrigger value="all" className="rounded-xl px-6 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm">
-              All Divisions
+          <TabsList className="bg-white p-2 rounded-[2rem] border-2 border-[#dcd7cf] h-18 flex items-center shadow-xl shadow-black/5 w-fit">
+            <TabsTrigger value="all" className="rounded-2xl px-10 h-14 font-black text-[11px] uppercase tracking-[0.2em] data-[state=active]:bg-[#1c1c1c] data-[state=active]:text-white data-[state=active]:shadow-2xl transition-all duration-300">
+              Complete Pipeline
             </TabsTrigger>
             {DIVISIONS.map(d => (
-              <TabsTrigger key={d} value={d} className="rounded-xl px-6 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm">
+              <TabsTrigger key={d} value={d} className="rounded-2xl px-8 h-14 font-black text-[11px] uppercase tracking-[0.2em] data-[state=active]:bg-[#1c1c1c] data-[state=active]:text-white data-[state=active]:shadow-2xl transition-all duration-300">
                 {d}
               </TabsTrigger>
             ))}
@@ -33,20 +32,13 @@ export function TaskFilters({
         </Tabs>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         <Button 
-          variant="outline" 
-          className="rounded-xl border-slate-200 h-12 px-6 font-bold text-[10px] uppercase tracking-widest gap-2 bg-white text-slate-600 hover:bg-slate-50 transition-all"
-        >
-          <FilterIcon className="h-4 w-4" />
-          Filter
-        </Button>
-        <Button 
-          className="bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-xl h-12 px-8 shadow-lg shadow-indigo-100 transition-all active:scale-95 gap-2"
+          className="bg-[#1c1c1c] hover:bg-[#1c1c1c]/90 text-white font-black text-[11px] uppercase tracking-[0.3em] rounded-2xl h-14 px-10 shadow-2xl shadow-black/10 transition-all active:scale-95 gap-3"
           onClick={onAddTask}
         >
-          <Plus className="h-4 w-4" />
-          NEW TASK
+          <Plus className="h-5 w-5" />
+          AUTHORIZE TASK
         </Button>
       </div>
     </div>

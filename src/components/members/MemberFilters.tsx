@@ -57,15 +57,15 @@ export function MemberFilters({
   onClearTags
 }: MemberFiltersProps) {
   return (
-    <Card className="rounded-3xl border-slate-200 shadow-sm bg-white overflow-visible">
+    <Card className="rounded-3xl border-[#dcd7cf] shadow-sm bg-white overflow-visible">
       <CardContent className="p-4 md:p-6 space-y-4">
         <div className="flex flex-col lg:flex-row gap-4">
           {/* Main Search */}
           <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#535366]/40" />
             <Input 
               placeholder="Search by name or student ID..." 
-              className="pl-11 bg-slate-50 border-slate-100 rounded-2xl h-12 focus-visible:ring-indigo-500 font-medium"
+              className="pl-11 bg-[#f4f2ef]/50 border-[#dcd7cf] rounded-2xl h-12 focus-visible:ring-[#1c1c1c]/10 font-medium"
               value={search}
               onChange={(e) => onSearchChange(e.target.value)}
             />
@@ -74,7 +74,7 @@ export function MemberFilters({
           {/* Compact Dropdown Filters */}
           <div className="flex flex-wrap items-center gap-2">
             <Select value={statusFilter} onValueChange={onStatusFilterChange}>
-              <SelectTrigger className="w-[130px] rounded-2xl h-12 bg-white border-slate-200 text-xs font-bold uppercase tracking-wider">
+              <SelectTrigger className="w-[130px] rounded-2xl h-12 bg-white border-[#dcd7cf] text-xs font-bold uppercase tracking-wider">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent className="rounded-2xl">
@@ -86,7 +86,7 @@ export function MemberFilters({
             </Select>
 
             <Select value={divisionFilter} onValueChange={onDivisionFilterChange}>
-              <SelectTrigger className="w-[160px] rounded-2xl h-12 bg-white border-slate-200 text-xs font-bold uppercase tracking-wider">
+              <SelectTrigger className="w-[160px] rounded-2xl h-12 bg-white border-[#dcd7cf] text-xs font-bold uppercase tracking-wider">
                 <SelectValue placeholder="Division" />
               </SelectTrigger>
               <SelectContent className="rounded-2xl">
@@ -97,7 +97,7 @@ export function MemberFilters({
             </Select>
 
             <Select value={roleFilter} onValueChange={onRoleFilterChange}>
-              <SelectTrigger className="w-[140px] rounded-2xl h-12 bg-white border-slate-200 text-xs font-bold uppercase tracking-wider">
+              <SelectTrigger className="w-[140px] rounded-2xl h-12 bg-white border-[#dcd7cf] text-xs font-bold uppercase tracking-wider">
                 <SelectValue placeholder="Role" />
               </SelectTrigger>
               <SelectContent className="rounded-2xl">
@@ -110,14 +110,14 @@ export function MemberFilters({
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="rounded-2xl h-12 gap-2 border-slate-200 text-xs font-bold uppercase tracking-wider px-4">
+                <Button variant="outline" className="rounded-2xl h-12 gap-2 border-[#dcd7cf] text-xs font-bold uppercase tracking-wider px-4">
                   <ArrowUpDown className="h-4 w-4" />
                   Sort
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48 rounded-2xl">
                 <DropdownMenuGroup>
-                  <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-3 py-2">Sort By</DropdownMenuLabel>
+                  <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-[#535366]/40 px-3 py-2">Sort By</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => onSortByChange('name_asc')} className="text-xs font-bold py-3">Name (A-Z)</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => onSortByChange('name_desc')} className="text-xs font-bold py-3">Name (Z-A)</DropdownMenuItem>
@@ -131,12 +131,12 @@ export function MemberFilters({
 
         {/* Active Filters & Tags */}
         <div className="flex flex-wrap items-center gap-2 pt-2">
-          <div className="flex items-center gap-2 text-slate-400 mr-2">
+          <div className="flex items-center gap-2 text-[#535366]/40 mr-2">
             <TagIcon className="h-3.5 w-3.5" />
             <span className="text-[10px] font-black uppercase tracking-widest">Filter Tags:</span>
           </div>
           {allAvailableTags.length === 0 ? (
-            <span className="text-[10px] font-bold text-slate-300 uppercase italic">No tags defined</span>
+            <span className="text-[10px] font-bold text-[#535366]/30 uppercase italic">No tags defined</span>
           ) : (
             allAvailableTags.map(tag => (
               <Badge
@@ -145,8 +145,8 @@ export function MemberFilters({
                 className={cn(
                   "cursor-pointer rounded-xl px-3 py-1 text-[10px] font-black uppercase tracking-tight transition-all",
                   selectedTags.includes(tag) 
-                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-100" 
-                    : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                    ? "bg-[#1c1c1c] text-white shadow-md shadow-black/10" 
+                    : "bg-[#eae6e0] text-[#535366]/60 hover:bg-[#eae6e0]"
                 )}
               >
                 {tag}

@@ -1,89 +1,89 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button'; // <--- Add this line
-import { Target, CalendarDays, ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Target, Layers, ArrowRight, Activity } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+import { NexusFeed } from './NexusFeed';
 
 interface ActivityOverviewProps {
   divisionProgress: any[];
-  upcomingAgenda: any[];
 }
 
-export function ActivityOverview({ divisionProgress, upcomingAgenda }: ActivityOverviewProps) {
+export function ActivityOverview({ divisionProgress }: ActivityOverviewProps) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
       {/* Division Progress */}
-      <Card className="lg:col-span-2 rounded-[2.5rem] border-slate-100 shadow-xl overflow-hidden bg-white">
-        <CardHeader className="border-b border-slate-50 p-8">
+      <Card className="lg:col-span-2 rounded-[3rem] border-2 border-[#dcd7cf] shadow-2xl shadow-black/5 overflow-hidden bg-white premium-shadow">
+        <CardHeader className="border-b-2 border-[#f4f2ef] p-10">
           <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
-                <Target className="h-5 w-5 text-indigo-600" />
-                Division Progress
-              </CardTitle>
-              <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Operational Status</CardDescription>
-            </div>
-            <Link to="/tasks">
-              <div className="h-10 w-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all group">
-                <ArrowRight className="h-5 w-5 group-hover:translate-x-0.5 transition-transform" />
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-2xl bg-[#1c1c1c] flex items-center justify-center text-white shadow-xl shadow-black/20">
+                <Target className="h-6 w-6" />
               </div>
-            </Link>
+              <div>
+                <CardTitle className="text-xl font-heading font-black tracking-tight text-[#1c1c1c]">
+                  Division <span className="text-[#535366]">Analytics</span>
+                </CardTitle>
+                <CardDescription className="text-[10px] font-black uppercase tracking-[0.2em] text-[#535366]/40 mt-1">Operational Pipeline Status</CardDescription>
+              </div>
+            </div>
+            <Button asChild variant="ghost" size="icon" className="h-12 w-12 rounded-2xl bg-[#f4f2ef] text-[#1c1c1c] hover:bg-[#1c1c1c] hover:text-white transition-all group border-none">
+              <Link to="/tasks">
+                <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </Button>
           </div>
         </CardHeader>
-        <CardContent className="p-8">
-          <div className="space-y-8">
+        <CardContent className="p-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
             {divisionProgress.map((item, i) => (
-              <div key={i} className="space-y-3">
+              <div key={i} className="space-y-4 group">
                 <div className="flex justify-between items-end">
-                  <div>
-                    <p className="text-xs font-black text-slate-900 uppercase tracking-tight">{item.label}</p>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase">{item.count} tasks completed</p>
+                  <div className="space-y-1">
+                    <p className="text-xs font-black text-[#1c1c1c] uppercase tracking-widest flex items-center gap-2">
+                      <Layers className="h-3 w-3 text-[#535366]/40" />
+                      {item.label}
+                    </p>
+                    <p className="text-[9px] font-black text-[#535366]/30 uppercase tracking-tighter">{item.count} Tasks Synchronized</p>
                   </div>
-                  <span className="text-xs font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg">{item.progress}%</span>
+                  <span className="text-[10px] font-black text-[#1c1c1c] bg-[#f4f2ef] px-3 py-1.5 rounded-xl border border-[#dcd7cf] group-hover:bg-[#1c1c1c] group-hover:text-white transition-all duration-500">{item.progress}%</span>
                 </div>
-                <Progress value={item.progress} className="h-2.5 rounded-full bg-slate-100" />
+                <div className="h-2.5 w-full bg-[#f4f2ef] rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-[#1c1c1c] rounded-full transition-all duration-1000 ease-out"
+                    style={{ width: `${item.progress}%` }}
+                  />
+                </div>
               </div>
             ))}
           </div>
         </CardContent>
       </Card>
 
-      {/* Upcoming Agenda */}
-      <Card className="rounded-[2.5rem] border-slate-100 shadow-xl overflow-hidden bg-white">
-        <CardHeader className="border-b border-slate-50 p-8">
-          <div>
-            <CardTitle className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
-              <CalendarDays className="h-5 w-5 text-indigo-600" />
-              Next Milestones
-            </CardTitle>
-            <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Timeline Strategy</CardDescription>
+      {/* The Nexus Feed */}
+      <Card className="rounded-[3rem] border-2 border-[#dcd7cf] shadow-2xl shadow-black/5 overflow-hidden bg-white premium-shadow">
+        <CardHeader className="border-b-2 border-[#f4f2ef] p-10">
+          <div className="flex items-center gap-4">
+            <div className="h-12 w-12 rounded-2xl bg-[#535366] flex items-center justify-center text-white shadow-xl shadow-[#535366]/20">
+              <Activity className="h-6 w-6" />
+            </div>
+            <div>
+              <CardTitle className="text-xl font-heading font-black tracking-tight text-[#1c1c1c]">
+                Institutional <span className="text-[#535366]">Nexus</span>
+              </CardTitle>
+              <CardDescription className="text-[10px] font-black uppercase tracking-[0.2em] text-[#535366]/40 mt-1">Real-time Activity Stream</CardDescription>
+            </div>
           </div>
         </CardHeader>
-        <CardContent className="p-8">
-          <div className="space-y-6">
-            {upcomingAgenda.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-xs font-bold text-slate-400 uppercase italic">No upcoming events</p>
-              </div>
-            ) : (
-              upcomingAgenda.map((item, i) => (
-                <div key={i} className="flex gap-5 group cursor-default">
-                  <div className="shrink-0 w-14 h-14 rounded-2xl bg-slate-50 flex flex-col items-center justify-center border border-slate-100 group-hover:border-indigo-200 group-hover:bg-indigo-50/50 transition-colors">
-                    <span className="text-[10px] font-black text-slate-400 group-hover:text-indigo-400 uppercase">{item.date.split(' ')[0]}</span>
-                    <span className="text-lg font-black text-slate-900 group-hover:text-indigo-600">{item.date.split(' ')[1]}</span>
-                  </div>
-                  <div className="flex flex-col justify-center min-w-0">
-                    <h4 className="text-sm font-black text-slate-900 tracking-tight truncate group-hover:text-indigo-600 transition-colors">{item.title}</h4>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter truncate">{item.sub}</p>
-                  </div>
-                </div>
-              ))
-            )}
-            <Button asChild variant="outline" className="w-full rounded-2xl border-slate-200 h-12 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 hover:bg-slate-50 mt-4">
-              <Link to="/tasks">View Full Roadmap</Link>
-            </Button>
+        <CardContent className="p-10 flex flex-col h-[500px]">
+          <div className="flex-1 overflow-hidden">
+            <NexusFeed />
           </div>
+          <Button asChild variant="outline" className="w-full rounded-[1.5rem] border-2 border-[#dcd7cf] text-[#1c1c1c] h-14 text-[10px] font-black uppercase tracking-[0.3em] mt-8 hover:bg-[#1c1c1c] hover:text-white transition-all shadow-xl shadow-black/5">
+            <Link to="/notifications">Audit Full History</Link>
+          </Button>
         </CardContent>
       </Card>
     </div>

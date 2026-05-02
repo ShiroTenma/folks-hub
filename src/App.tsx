@@ -5,6 +5,7 @@ import { useAuthListener } from '@/hooks/useAuthListener';
 import { Toaster } from '@/components/ui/sonner';
 import { AppShell } from '@/components/layout/AppShell';
 import { LoadingScreen } from '@/components/layout/LoadingScreen';
+import { CommandPalette } from '@/components/layout/CommandPalette';
 
 // Lazy load pages for performance
 const LoginPage = lazy(() => import('@/pages/LoginPage').then(m => ({ default: m.LoginPage })));
@@ -31,6 +32,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Toaster position="top-center" richColors closeButton />
+      <CommandPalette />
       <Suspense fallback={<LoadingScreen />}>
         <Routes>
           {/* Public access logic handled within elements */}
@@ -61,6 +63,7 @@ export default function App() {
                     <Route path="/finance/split" element={<SplitBillPage />} />
                     
                     <Route path="/profile" element={<ProfilePage />} />
+                    <Route path="/profile/:id" element={<ProfilePage />} />
                     <Route path="/notifications" element={<NotificationsPage />} />
                     <Route path="/settings" element={<SettingsPage />} />
                     <Route path="*" element={<NotFoundPage />} />

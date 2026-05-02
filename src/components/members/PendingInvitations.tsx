@@ -25,16 +25,16 @@ export function PendingInvitations({
   onReject
 }: PendingInvitationsProps) {
   return (
-    <Card className="rounded-3xl border-slate-200 shadow-xl overflow-hidden bg-white">
+    <Card className="rounded-3xl border-[#dcd7cf] shadow-xl overflow-hidden bg-white">
       <CardContent className="p-0">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-slate-900 border-none hover:bg-slate-900">
-                <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400 py-6 pl-8">Applicant</TableHead>
-                <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400">Target Division</TableHead>
-                <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-400">Contact / ID</TableHead>
-                <TableHead className="text-right text-[10px] font-black uppercase tracking-widest text-slate-400 pr-8">Actions</TableHead>
+              <TableRow className="bg-[#1c1c1c] border-none hover:bg-[#1c1c1c]">
+                <TableHead className="text-[10px] font-black uppercase tracking-widest text-[#535366]/40 py-6 pl-8">Applicant</TableHead>
+                <TableHead className="text-[10px] font-black uppercase tracking-widest text-[#535366]/40">Target Division</TableHead>
+                <TableHead className="text-[10px] font-black uppercase tracking-widest text-[#535366]/40">Contact / ID</TableHead>
+                <TableHead className="text-right text-[10px] font-black uppercase tracking-widest text-[#535366]/40 pr-8">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -45,7 +45,7 @@ export function PendingInvitations({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: i * 0.03 }}
-                    className="group border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-all"
+                    className="group border-b border-[#dcd7cf]/50 last:border-0 hover:bg-[#f4f2ef]/50 transition-all"
                   >
                     <TableCell className="py-5 pl-8">
                       <div className="flex items-center gap-4">
@@ -55,7 +55,7 @@ export function PendingInvitations({
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col min-w-0">
-                          <span className="font-black text-slate-900 text-sm truncate">{member.full_name}</span>
+                          <span className="font-black text-[#1c1c1c] text-sm truncate">{member.full_name}</span>
                           <span className="text-[10px] font-bold text-amber-500 uppercase tracking-tight flex items-center gap-1">
                             <Clock className="h-2 w-2" /> Pending Approval
                           </span>
@@ -63,12 +63,12 @@ export function PendingInvitations({
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className="text-xs font-bold text-slate-600">{member.division}</span>
+                      <span className="text-xs font-bold text-[#535366]">{member.division}</span>
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col">
-                        <span className="text-xs font-black text-slate-700">{member.contact}</span>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">SID: {member.student_id}</span>
+                        <span className="text-xs font-black text-[#535366]">{member.contact}</span>
+                        <span className="text-[10px] font-bold text-[#535366]/40 uppercase tracking-widest">SID: {member.student_id}</span>
                       </div>
                     </TableCell>
                     <TableCell className="text-right pr-8">
@@ -95,7 +95,7 @@ export function PendingInvitations({
               ) : (
                 <TableRow>
                   <TableCell colSpan={4} className="h-48 text-center">
-                    <div className="flex flex-col items-center justify-center text-slate-400 gap-2">
+                    <div className="flex flex-col items-center justify-center text-[#535366]/40 gap-2">
                       <CheckCircle2 className="h-8 w-8 opacity-10" />
                       <p className="text-xs font-bold uppercase tracking-widest">No pending invitations</p>
                     </div>

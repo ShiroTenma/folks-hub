@@ -1,8 +1,8 @@
 import React from 'react';
-import { 
-  Users, 
-  CheckSquare, 
-  PieChart, 
+import {
+  Users,
+  CheckSquare,
+  PieChart,
   ChevronLeft,
   ChevronRight,
   LayoutDashboard,
@@ -11,7 +11,8 @@ import {
   Calendar,
   Receipt,
   X,
-  Settings
+  Settings,
+  Sparkles
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -23,9 +24,9 @@ const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
   { icon: Users, label: 'Members', path: '/members' },
   { icon: CheckSquare, label: 'Tasks', path: '/tasks' },
-  { 
-    icon: PieChart, 
-    label: 'Finance', 
+  {
+    icon: PieChart,
+    label: 'Finance',
     path: '/finance',
     children: [
       { icon: BookOpen, label: 'Ledger', path: '/finance' },
@@ -46,7 +47,7 @@ interface SidebarProps {
 export function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse }: SidebarProps) {
   const location = useLocation();
   const { profile } = useAuthStore();
-  const isAdmin = profile?.role === 'super_admin' || profile?.role === 'admin';
+  const isAdmin = (profile?.access_level === 'super_admin' || profile?.access_level === 'admin' || profile?.role === 'super_admin' || profile?.role === 'admin');
 
   const [openSubmenu, setOpenSubmenu] = React.useState<string | null>(
     location.pathname.startsWith('/finance') ? 'Finance' : null
@@ -60,21 +61,24 @@ export function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse }: Side
   const filteredMenuItems = menuItems.filter(item => !item.adminOnly || isAdmin);
 
   const sidebarContent = (
-    <>
+    <div className="h-full flex flex-col bg-[#1c1c1c] text-[#eae6e0]">
       {/* Brand Logo */}
-      <div className="h-16 flex items-center justify-between px-6 border-b border-slate-800 shrink-0">
-        <div className="flex items-center">
-          <div className="w-8 h-8 bg-indigo-600 rounded-xl flex items-center justify-center text-white shrink-0 shadow-lg shadow-indigo-500/20">
-            <div className="w-4 h-4 border-2 border-white rounded-sm"></div>
+      <div className="h-20 flex items-center justify-between px-8 border-b border-white/5 shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-[#535366] rounded-2xl flex items-center justify-center text-white shrink-0 shadow-2xl shadow-black/40 border border-white/10">
+            <Sparkles className="h-5 w-5" />
           </div>
           {(!isCollapsed || !isOpen) && (
-            <span className="ml-3 font-black text-white tracking-tighter text-xl">FOLKS<span className="text-indigo-500">HUB</span></span>
+            <div className="flex flex-col">
+              <span className="font-heading font-black text-[#ffffff] tracking-tight text-xl leading-none italic">FOLKS<span className="text-[#535366] not-italic">Hub</span></span>
+              <span className="text-[10px] font-sans font-black uppercase tracking-[0.3em] text-[#535366] mt-1">Management</span>
+            </div>
           )}
         </div>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="md:hidden text-slate-400 hover:text-white"
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden text-white/40 hover:text-white"
           onClick={onClose}
         >
           <X className="h-5 w-5" />
@@ -82,10 +86,10 @@ export function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse }: Side
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto scrollbar-hide">
+      <nav className="flex-1 py-8 px-4 space-y-2 overflow-y-auto custom-scrollbar">
         {filteredMenuItems.map((item) => {
-          const isActive = location.pathname === item.path || 
-                          (item.path !== '/' && location.pathname.startsWith(item.path));
+          const isActive = location.pathname === item.path ||
+            (item.path !== '/' && location.pathname.startsWith(item.path));
           const hasChildren = item.children && item.children.length > 0;
           const isOpenSub = openSubmenu === item.label;
 
@@ -95,17 +99,17 @@ export function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse }: Side
                 <button
                   onClick={() => toggleSubmenu(item.label)}
                   className={cn(
-                    "w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all group relative",
+                    "w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all group relative font-sans",
                     isActive && !isOpenSub
-                      ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20" 
-                      : "hover:bg-slate-800 hover:text-slate-200"
+                      ? "bg-[#535366] text-white shadow-xl shadow-black/20"
+                      : "hover:bg-white/5 text-white/60 hover:text-white"
                   )}
                 >
-                  <item.icon className={cn("h-5 w-5 shrink-0", isActive && !isOpenSub ? "text-white" : "group-hover:text-indigo-400")} />
+                  <item.icon className={cn("h-5 w-5 shrink-0", isActive && !isOpenSub ? "text-white" : "text-[#535366] group-hover:text-white")} />
                   {(!isCollapsed || !isOpen) && (
                     <>
-                      <span className="font-bold text-sm tracking-tight flex-1 text-left">{item.label}</span>
-                      <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isOpenSub && "rotate-180")} />
+                      <span className="font-bold text-sm tracking-wide flex-1 text-left">{item.label}</span>
+                      <ChevronDown className={cn("h-4 w-4 opacity-40 transition-transform duration-300", isOpenSub && "rotate-180")} />
                     </>
                   )}
                 </button>
@@ -114,18 +118,18 @@ export function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse }: Side
                   to={item.path}
                   onClick={() => { if (window.innerWidth < 768) onClose(); }}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-3 rounded-xl transition-all group relative",
-                    isActive 
-                      ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20" 
-                      : "hover:bg-slate-800 hover:text-slate-200"
+                    "flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all group relative font-sans",
+                    isActive
+                      ? "bg-[#535366] text-white shadow-xl shadow-black/20"
+                      : "hover:bg-white/5 text-white/60 hover:text-white"
                   )}
                 >
-                  <item.icon className={cn("h-5 w-5 shrink-0", isActive ? "text-white" : "group-hover:text-indigo-400")} />
-                  {(!isCollapsed || !isOpen) && <span className="font-bold text-sm tracking-tight">{item.label}</span>}
+                  <item.icon className={cn("h-5 w-5 shrink-0", isActive ? "text-white" : "text-[#535366] group-hover:text-white")} />
+                  {(!isCollapsed || !isOpen) && <span className="font-bold text-sm tracking-wide">{item.label}</span>}
                   {isActive && (!isCollapsed || !isOpen) && (
-                    <motion.div 
+                    <motion.div
                       layoutId="active-pill"
-                      className="absolute right-2 w-1.5 h-1.5 bg-white rounded-full"
+                      className="absolute right-4 w-1.5 h-1.5 bg-white rounded-full"
                     />
                   )}
                 </Link>
@@ -138,7 +142,7 @@ export function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse }: Side
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden pl-4 space-y-1"
+                    className="overflow-hidden pl-11 space-y-1 mt-1"
                   >
                     {item.children.map((child) => {
                       const isChildActive = location.pathname === child.path;
@@ -148,14 +152,13 @@ export function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse }: Side
                           to={child.path}
                           onClick={() => { if (window.innerWidth < 768) onClose(); }}
                           className={cn(
-                            "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group",
-                            isChildActive 
-                              ? "text-indigo-400 font-bold" 
-                              : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/50"
+                            "flex items-center gap-3 px-4 py-3 rounded-xl transition-all group font-sans",
+                            isChildActive
+                              ? "text-white font-bold"
+                              : "text-white/30 hover:text-white hover:bg-white/5"
                           )}
                         >
-                          <child.icon className={cn("h-4 w-4", isChildActive ? "text-indigo-400" : "group-hover:text-indigo-400")} />
-                          <span className="text-xs font-bold tracking-tight">{child.label}</span>
+                          <span className="text-[11px] font-black uppercase tracking-[0.2em]">{child.label}</span>
                         </Link>
                       );
                     })}
@@ -168,54 +171,53 @@ export function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse }: Side
       </nav>
 
       {/* Sidebar Footer / Toggle */}
-      <div className="p-4 border-t border-slate-800 hidden md:block">
-        <Button 
-          variant="ghost" 
-          size="sm" 
+      <div className="p-6 border-t border-white/5 hidden md:block">
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={onToggleCollapse}
-          className="w-full justify-start text-slate-500 hover:text-white hover:bg-slate-800 rounded-xl gap-3 h-11"
+          className="w-full justify-start text-white/30 hover:text-white hover:bg-white/5 rounded-2xl gap-4 h-14 transition-all duration-300"
         >
-          {isCollapsed ? <ChevronRight className="h-5 w-5 mx-auto" /> : (
+          {isCollapsed ? <ChevronRight className="h-6 w-6 mx-auto" /> : (
             <>
-              <ChevronLeft className="h-5 w-5" />
-              <span className="text-xs font-bold uppercase tracking-widest">Collapse Sidebar</span>
+              <div className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center">
+                <ChevronLeft className="h-5 w-5" />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] font-sans">Minimize</span>
             </>
           )}
         </Button>
       </div>
-    </>
+    </div>
   );
 
   return (
     <>
-      {/* Mobile Drawer Backdrop */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 md:hidden"
+            className="fixed inset-0 bg-black/80 backdrop-blur-md z-40 md:hidden"
           />
         )}
       </AnimatePresence>
 
-      {/* Mobile Sidebar */}
-      <motion.aside 
+      <motion.aside
         initial={{ x: '-100%' }}
         animate={{ x: isOpen ? 0 : '-100%' }}
-        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-        className="fixed left-0 top-0 bottom-0 w-72 bg-slate-900 text-slate-400 z-50 flex flex-col md:hidden"
+        transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+        className="fixed left-0 top-0 bottom-0 w-80 z-50 flex flex-col md:hidden"
       >
         {sidebarContent}
       </motion.aside>
 
-      {/* Desktop Sidebar */}
-      <aside 
+      <aside
         className={cn(
-          "fixed left-0 top-0 h-screen bg-slate-900 text-slate-400 transition-all duration-300 z-40 hidden md:flex flex-col border-r border-slate-800",
-          isCollapsed ? "w-20" : "w-64"
+          "fixed left-0 top-0 h-screen transition-all duration-500 z-40 hidden md:flex flex-col border-r border-white/5",
+          isCollapsed ? "w-24" : "w-72"
         )}
       >
         {sidebarContent}

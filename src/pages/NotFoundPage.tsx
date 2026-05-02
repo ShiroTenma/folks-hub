@@ -15,21 +15,21 @@ export default function NotFoundPage() {
         transition={{ duration: 0.5 }}
         className="space-y-6"
       >
-        <div className="w-24 h-24 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center mx-auto shadow-sm">
+        <div className="w-24 h-24 bg-[#eae6e0] text-[#1c1c1c] rounded-3xl flex items-center justify-center mx-auto shadow-sm">
           <AlertCircle className="w-12 h-12" />
         </div>
         
         <div className="space-y-2">
-          <h1 className="text-6xl font-black text-slate-900 tracking-tighter">404</h1>
-          <h2 className="text-2xl font-bold text-slate-800">Page Not Found</h2>
-          <p className="text-slate-500 max-w-md mx-auto font-medium">
+          <h1 className="text-6xl font-black text-[#1c1c1c] tracking-tighter">404</h1>
+          <h2 className="text-2xl font-bold text-[#1c1c1c]">Page Not Found</h2>
+          <p className="text-[#535366]/60 max-w-md mx-auto font-medium">
             The page you are looking for doesn't exist or has been moved to another URL.
           </p>
         </div>
 
         <Button 
           onClick={() => navigate('/')}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl px-8 h-12 gap-2 shadow-lg shadow-indigo-200 transition-all active:scale-95"
+          className="bg-[#1c1c1c] hover:bg-[#1c1c1c]/90 text-white font-bold rounded-xl px-8 h-12 gap-2 shadow-lg shadow-black/10 transition-all active:scale-95"
         >
           <Home className="w-4 h-4" />
           BACK TO DASHBOARD

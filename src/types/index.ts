@@ -6,7 +6,8 @@ export type Profile = {
   student_id: string;
   division: string;
   batch: string;
-  role: RoleId;
+  role: RoleId | string;
+  access_level?: 'super_admin' | 'admin' | 'user';
   status: 'active' | 'inactive' | 'pending';
   contact: string;
   avatar_url?: string;

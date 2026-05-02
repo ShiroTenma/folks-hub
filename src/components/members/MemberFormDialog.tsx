@@ -95,12 +95,12 @@ export function MemberFormDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[550px] rounded-[2rem] p-0 overflow-hidden border-none shadow-2xl">
-        <div className="bg-slate-900 p-8 text-white">
+      <DialogContent className="sm:max-w-md rounded-xl p-0 overflow-hidden border-none shadow-2xl">
+        <div className="bg-[#1c1c1c] p-8 text-white">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black flex items-center gap-3">
-              <div className="p-2 bg-indigo-500/20 rounded-xl">
-                <UserPlus className="h-6 w-6 text-indigo-400" />
+              <div className="p-2 bg-[#1c1c1c]/20 rounded-xl">
+                <UserPlus className="h-6 w-6 text-[#1c1c1c]" />
               </div>
               {member ? 'Update Profile' : 'New Member'}
             </DialogTitle>
@@ -110,20 +110,20 @@ export function MemberFormDialog({
         <form onSubmit={handleSubmit} className="p-8 space-y-6 bg-white max-h-[70vh] overflow-y-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Full Name</Label>
+              <Label className="text-[10px] font-black uppercase tracking-widest text-[#535366]/40">Full Name</Label>
               <Input 
                 value={formData.full_name} 
                 onChange={e => setFormData({...formData, full_name: e.target.value})} 
-                className="h-12 rounded-2xl border-slate-200 font-bold focus:ring-4 focus:ring-indigo-500/5" 
+                className="h-12 rounded-2xl border-[#dcd7cf] font-bold focus:ring-4 focus:ring-[#1c1c1c]/10" 
                 required 
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Student ID</Label>
+              <Label className="text-[10px] font-black uppercase tracking-widest text-[#535366]/40">Student ID</Label>
               <Input 
                 value={formData.student_id} 
                 onChange={e => setFormData({...formData, student_id: e.target.value})} 
-                className="h-12 rounded-2xl border-slate-200 font-bold" 
+                className="h-12 rounded-2xl border-[#dcd7cf] font-bold" 
                 required 
               />
             </div>
@@ -131,9 +131,9 @@ export function MemberFormDialog({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Division</Label>
+              <Label className="text-[10px] font-black uppercase tracking-widest text-[#535366]/40">Division</Label>
               <Select value={formData.division} onValueChange={v => setFormData({...formData, division: v})}>
-                <SelectTrigger className="h-12 rounded-2xl border-slate-200 font-bold">
+                <SelectTrigger className="h-12 rounded-2xl border-[#dcd7cf] font-bold">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl">
@@ -142,9 +142,9 @@ export function MemberFormDialog({
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">System Role</Label>
+              <Label className="text-[10px] font-black uppercase tracking-widest text-[#535366]/40">System Role</Label>
               <Select value={formData.role} onValueChange={(v:any) => setFormData({...formData, role: v})}>
-                <SelectTrigger className="h-12 rounded-2xl border-slate-200 font-bold">
+                <SelectTrigger className="h-12 rounded-2xl border-[#dcd7cf] font-bold">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl">
@@ -154,8 +154,8 @@ export function MemberFormDialog({
             </div>
           </div>
 
-          <div className="space-y-4 pt-4 border-t border-slate-50">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-indigo-600 flex items-center gap-2">
+          <div className="space-y-4 pt-4 border-t border-[#dcd7cf]/50">
+            <Label className="text-[10px] font-black uppercase tracking-widest text-[#1c1c1c] flex items-center gap-2">
               <TagIcon className="h-3 w-3" /> Assign Categories (Tags)
             </Label>
             <div className="flex flex-wrap gap-2">
@@ -171,7 +171,7 @@ export function MemberFormDialog({
                   }}
                   className={cn(
                     "px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-tight transition-all border",
-                    formData.tags.includes(tag) ? "bg-indigo-600 border-indigo-600 text-white" : "bg-white border-slate-100 text-slate-400 hover:border-slate-200"
+                    formData.tags.includes(tag) ? "bg-[#1c1c1c] border-[#1c1c1c] text-white" : "bg-white border-[#dcd7cf] text-[#535366]/40 hover:border-[#dcd7cf]"
                   )}
                 >
                   {tag}
@@ -180,18 +180,18 @@ export function MemberFormDialog({
             </div>
           </div>
 
-          <DialogFooter className="pt-6 border-t border-slate-50">
+          <DialogFooter className="pt-6 border-t border-[#dcd7cf]/50">
             <Button 
               type="button" 
               variant="ghost" 
               onClick={() => onOpenChange(false)} 
-              className="rounded-2xl font-bold uppercase text-[10px] tracking-widest text-slate-400"
+              className="rounded-2xl font-bold uppercase text-[10px] tracking-widest text-[#535366]/40"
             >
               Cancel
             </Button>
             <Button 
               disabled={isSaving} 
-              className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-12 px-10 font-black uppercase text-[10px] tracking-[0.2em] shadow-lg shadow-indigo-100 transition-all active:scale-95"
+              className="bg-[#1c1c1c] hover:bg-[#1c1c1c]/90 text-white rounded-2xl h-12 px-10 font-black uppercase text-[10px] tracking-[0.2em] shadow-lg shadow-black/10 transition-all active:scale-95"
             >
               {isSaving ? 'Processing...' : member ? 'Update Profile' : 'Add to Organization'}
             </Button>

@@ -31,14 +31,14 @@ export function SelectionToolbar({
           exit={{ y: 100, opacity: 0 }}
           className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 w-full max-w-4xl px-4"
         >
-          <div className="bg-slate-900 text-white rounded-[2rem] p-4 shadow-2xl flex items-center justify-between gap-4 border border-white/10 backdrop-blur-xl">
+          <div className="bg-[#1c1c1c] text-white rounded-[2rem] p-4 shadow-2xl flex items-center justify-between gap-4 border border-white/10 backdrop-blur-xl">
             <div className="flex items-center gap-4 pl-4 shrink-0">
-              <div className="bg-indigo-500 text-white h-10 w-10 rounded-2xl flex items-center justify-center font-black text-sm shadow-lg shadow-indigo-500/20">
+              <div className="bg-[#1c1c1c] text-white h-10 w-10 rounded-2xl flex items-center justify-center font-black text-sm shadow-lg shadow-black/10">
                 {selectedCount}
               </div>
               <div className="flex flex-col hidden sm:flex">
                 <span className="text-xs font-black uppercase tracking-widest">Selected</span>
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">Bulk Actions Available</span>
+                <span className="text-[10px] text-[#535366]/40 font-bold uppercase tracking-tight">Bulk Actions Available</span>
               </div>
             </div>
 
@@ -66,7 +66,7 @@ export function SelectionToolbar({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="rounded-2xl w-48 p-2">
                   <DropdownMenuItem onClick={() => onBulkUpdate('status', 'active')} className="rounded-xl py-3 font-bold text-xs text-emerald-600">Active</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onBulkUpdate('status', 'inactive')} className="rounded-xl py-3 font-bold text-xs text-slate-400">Inactive</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onBulkUpdate('status', 'inactive')} className="rounded-xl py-3 font-bold text-xs text-[#535366]/40">Inactive</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 

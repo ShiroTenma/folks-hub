@@ -15,6 +15,8 @@ interface MemberGridProps {
   totalPages: number;
   onPageChange: (page: number) => void;
   onResetFilters: () => void;
+  onSnapshot: (member: Profile) => void;
+  isAdmin?: boolean;
 }
 
 export function MemberGrid({
@@ -27,13 +29,15 @@ export function MemberGrid({
   currentPage,
   totalPages,
   onPageChange,
-  onResetFilters
+  onResetFilters,
+  onSnapshot,
+  isAdmin = false
 }: MemberGridProps) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {isLoading ? (
-          <div className="col-span-full h-64 flex items-center justify-center text-slate-400 font-bold uppercase">
+          <div className="col-span-full h-64 flex items-center justify-center text-[#535366]/40 font-bold uppercase">
             Syncing Database...
           </div>
         ) : members.length > 0 ? (
@@ -45,14 +49,16 @@ export function MemberGrid({
               onSelect={onSelectMember}
               onEdit={onEdit}
               onRevoke={onRevoke}
+              onSnapshot={onSnapshot}
               index={i}
+              isAdmin={isAdmin}
             />
           ))
         ) : (
-          <div className="col-span-full h-64 flex flex-col items-center justify-center text-slate-400 gap-2 bg-white rounded-3xl border border-dashed border-slate-200">
+          <div className="col-span-full h-64 flex flex-col items-center justify-center text-[#535366]/40 gap-2 bg-white rounded-3xl border border-dashed border-[#dcd7cf]">
             <Search className="h-8 w-8 opacity-10" />
             <p className="text-xs font-bold uppercase tracking-widest">No members match your criteria</p>
-            <Button variant="link" onClick={onResetFilters} className="text-indigo-600 font-black text-[10px] uppercase">Reset Filters</Button>
+            <Button variant="link" onClick={onResetFilters} className="text-[#1c1c1c] font-black text-[10px] uppercase">Reset Filters</Button>
           </div>
         )}
       </div>
@@ -63,17 +69,17 @@ export function MemberGrid({
           <Button 
             variant="outline" 
             size="sm" 
-            className="rounded-xl h-10 font-bold text-[10px] uppercase tracking-widest px-6 bg-white border-slate-200" 
+            className="rounded-xl h-10 font-bold text-[10px] uppercase tracking-widest px-6 bg-white border-[#dcd7cf]" 
             onClick={() => onPageChange(currentPage - 1)} 
             disabled={currentPage === 1}
           >
             Prev
           </Button>
-          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Page {currentPage} of {totalPages}</span>
+          <span className="text-[10px] font-black uppercase tracking-widest text-[#535366]/40">Page {currentPage} of {totalPages}</span>
           <Button 
             variant="outline" 
             size="sm" 
-            className="rounded-xl h-10 font-bold text-[10px] uppercase tracking-widest px-6 bg-white border-slate-200" 
+            className="rounded-xl h-10 font-bold text-[10px] uppercase tracking-widest px-6 bg-white border-[#dcd7cf]" 
             onClick={() => onPageChange(currentPage + 1)} 
             disabled={currentPage === totalPages}
           >

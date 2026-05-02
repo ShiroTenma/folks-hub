@@ -1,12 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
 import { toast } from 'sonner';
 
-export function useProfile() {
-  const { user, profile, fetchProfile } = useAuthStore();
+export function useProfile(targetId?: string) {
+  const { user: authUser, profile: currentUserProfile, fetchProfile } = useAuthStore();
+  const [profile, setProfile] = useState<any>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   const [formData, setFormData] = useState({
     full_name: '',
@@ -19,6 +21,37 @@ export function useProfile() {
     password: '',
   });
 
+  const effectiveId = targetId || authUser?.id;
+  const isOwnProfile = effectiveId === authUser?.id;
+
+  const loadData = useCallback(async () => {
+    if (!effectiveId) return;
+    setIsLoading(true);
+
+    try {
+      if (isOwnProfile && currentUserProfile) {
+        setProfile(currentUserProfile);
+      } else {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', effectiveId)
+          .single();
+        
+        if (error) throw error;
+        setProfile(data);
+      }
+    } catch (err) {
+      console.error('[useProfile] Load error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [effectiveId, isOwnProfile, currentUserProfile]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
   useEffect(() => {
     if (profile) {
       setFormData({
@@ -28,17 +61,17 @@ export function useProfile() {
         batch: profile.batch || '',
         role: profile.role || '',
         contact: profile.contact || '',
-        email: user?.email || '',
+        email: isOwnProfile ? authUser?.email || '' : profile.contact || '',
         password: '',
       });
     }
-  }, [profile, user]);
+  }, [profile, isOwnProfile, authUser]);
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
+    if (!e.target.files || e.target.files.length === 0 || !authUser) return;
     const file = e.target.files[0];
     const fileExt = file.name.split('.').pop();
-    const filePath = `${user?.id}/${Math.random()}.${fileExt}`;
+    const filePath = `${authUser.id}/${Math.random()}.${fileExt}`;
 
     setIsUploading(true);
     try {
@@ -55,12 +88,13 @@ export function useProfile() {
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ avatar_url: publicUrl })
-        .eq('id', user?.id);
+        .eq('id', authUser.id);
 
       if (updateError) throw updateError;
 
       toast.success('Profile picture updated successfully');
-      if (user?.id) await fetchProfile(user.id);
+      await fetchProfile(authUser.id);
+      await loadData();
     } catch (error: any) {
       console.error('[useProfile] Avatar Upload Error:', error);
       toast.error('Error uploading avatar: ' + (error.message || 'Check your connection'));
@@ -71,21 +105,27 @@ export function useProfile() {
 
   const handleUpdateProfile = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    if (!authUser || !effectiveId) return;
     setIsUpdating(true);
 
     try {
-      if (formData.email !== user?.email) {
-        const { error: emailError } = await supabase.auth.updateUser({ email: formData.email });
-        if (emailError) throw emailError;
-        toast.info('Verification email sent to new address');
+      // 1. Auth Updates (Only if it's own profile)
+      if (isOwnProfile) {
+        if (formData.email !== authUser.email) {
+          const { error: emailError } = await supabase.auth.updateUser({ email: formData.email });
+          if (emailError) throw emailError;
+          toast.info('Verification email sent to new address');
+        }
+
+        if (formData.password && formData.password.trim().length > 0) {
+          const { error: pwdError } = await supabase.auth.updateUser({ password: formData.password });
+          if (pwdError) throw pwdError;
+          toast.success('Password updated successfully');
+          setFormData(prev => ({ ...prev, password: '' })); // Clear password after success
+        }
       }
 
-      if (formData.password) {
-        const { error: pwdError } = await supabase.auth.updateUser({ password: formData.password });
-        if (pwdError) throw pwdError;
-        toast.success('Password updated successfully');
-      }
-
+      // 2. Profile Data Update
       const updateData: any = {
         full_name: formData.full_name,
         student_id: formData.student_id,
@@ -94,19 +134,23 @@ export function useProfile() {
         division: formData.division,
       };
 
-      if (profile?.role === 'super_admin') {
+      // Only Super Admins can change roles
+      if ((currentUserProfile?.access_level === 'super_admin' || currentUserProfile?.role === 'super_admin')) {
         updateData.role = formData.role;
       }
 
       const { error: profileError } = await supabase
         .from('profiles')
         .update(updateData)
-        .eq('id', user?.id);
+        .eq('id', effectiveId);
 
       if (profileError) throw profileError;
 
       toast.success('Profile updated successfully');
-      if (user?.id) await fetchProfile(user.id);
+      if (isOwnProfile) {
+        await fetchProfile(authUser.id);
+      }
+      await loadData();
       return true;
     } catch (error: any) {
       console.error('[useProfile] Update Error:', error);
@@ -118,12 +162,14 @@ export function useProfile() {
   };
 
   return {
-    user,
+    user: authUser,
     profile,
     formData,
     setFormData,
     isUpdating,
     isUploading,
+    isLoading,
+    isOwnProfile,
     handleAvatarUpload,
     handleUpdateProfile
   };

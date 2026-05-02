@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,267 +9,136 @@ import {
   DollarSign, 
   Calendar,
   Shield,
-  Trash2,
-  Plus,
-  X
+  Tag as TagIcon,
+  CreditCard,
+  ShieldAlert,
+  Sliders
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/useAuthStore';
-import { toast } from 'sonner';
-import { Badge } from '@/components/ui/badge';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import { useSettings } from '@/hooks/useSettings';
+import { SettingsCard } from '@/components/settings/SettingsCard';
 
 export default function SettingsPage() {
   useDocumentTitle('Settings');
   const { profile } = useAuthStore();
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+  const isAdmin = (profile?.access_level === 'super_admin' || profile?.access_level === 'admin' || profile?.role === 'super_admin' || profile?.role === 'admin');
   
-  const [monthlyFee, setMonthlyFee] = useState(10000);
-  const [months, setMonths] = useState<string[]>([]);
-  const [newMonth, setNewMonth] = useState('');
-
-  const [ledgerEvents, setLedgerEvents] = useState<string[]>([]);
-  const [newEvent, setNewEvent] = useState('');
-
-  const [ledgerPaymentTypes, setLedgerPaymentTypes] = useState<string[]>([]);
-  const [newPaymentType, setNewPaymentType] = useState('');
-
-  const isAdmin = profile?.role === 'super_admin' || profile?.role === 'admin';
-
-  useEffect(() => {
-    fetchSettings();
-  }, []);
-
-  const fetchSettings = async () => {
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase.from('settings').select('*');
-      if (error) throw error;
-
-      data?.forEach(setting => {
-        if (setting.key === 'monthly_cash_fee') {
-          setMonthlyFee(Number(setting.value));
-        } else if (setting.key === 'monthly_cash_months') {
-          setMonths(setting.value as string[]);
-        } else if (setting.key === 'ledger_events') {
-          setLedgerEvents(setting.value as string[]);
-        } else if (setting.key === 'ledger_payment_types') {
-          setLedgerPaymentTypes(setting.value as string[]);
-        }
-      });
-    } catch (error: any) {
-      toast.error('Failed to load settings: ' + error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSave = async () => {
-    if (!isAdmin) {
-      toast.error('Unauthorized: Admin access required');
-      return;
-    }
-
-    setIsSaving(true);
-    try {
-      const updates = [
-        { key: 'monthly_cash_fee', value: JSON.stringify(monthlyFee), updated_by: profile?.id },
-        { key: 'monthly_cash_months', value: JSON.stringify(months), updated_by: profile?.id },
-        { key: 'ledger_events', value: JSON.stringify(ledgerEvents), updated_by: profile?.id },
-        { key: 'ledger_payment_types', value: JSON.stringify(ledgerPaymentTypes), updated_by: profile?.id }
-      ];
-
-      for (const update of updates) {
-        const { error } = await supabase.from('settings').upsert({
-          key: update.key,
-          value: update.value,
-          updated_at: new Date().toISOString(),
-          updated_by: update.updated_by
-        });
-        if (error) throw error;
-      }
-
-      toast.success('Settings updated successfully');
-      await fetchSettings(); // Refresh to ensure UI matches DB
-    } catch (error: any) {
-      console.error('Settings Save Error:', error);
-      toast.error('Failed to save settings: ' + (error.message || 'Unknown error occurred'));
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const addMonth = () => {
-    if (!newMonth) return;
-    if (months.includes(newMonth)) return toast.error('Month already exists');
-    setMonths([...months, newMonth]);
-    setNewMonth('');
-  };
-
-  const addEvent = () => {
-    if (!newEvent) return;
-    if (ledgerEvents.includes(newEvent)) return toast.error('Event already exists');
-    setLedgerEvents([...ledgerEvents, newEvent]);
-    setNewEvent('');
-  };
-
-  const addPaymentType = () => {
-    if (!newPaymentType) return;
-    if (ledgerPaymentTypes.includes(newPaymentType)) return toast.error('Type already exists');
-    setLedgerPaymentTypes([...ledgerPaymentTypes, newPaymentType]);
-    setNewPaymentType('');
-  };
+  const {
+    isLoading, isSaving,
+    monthlyFee, setMonthlyFee,
+    months, setMonths,
+    ledgerEvents, setLedgerEvents,
+    ledgerPaymentTypes, setLedgerPaymentTypes,
+    taskTags, setTaskTags,
+    handleSave
+  } = useSettings();
 
   if (!isAdmin) {
     return (
-      <div className="flex flex-col items-center justify-center h-[60vh] space-y-4">
-        <Shield className="h-16 w-16 text-rose-500 opacity-20" />
-        <h2 className="text-xl font-black text-slate-900 uppercase tracking-widest">Access Denied</h2>
-        <p className="text-slate-500 font-medium">Only administrators can access this page.</p>
+      <div className="flex flex-col items-center justify-center h-[70vh] space-y-6 text-center">
+        <div className="h-24 w-24 rounded-[2.5rem] bg-rose-50 flex items-center justify-center text-rose-500 shadow-xl shadow-rose-500/10 border-2 border-rose-100">
+          <ShieldAlert className="h-12 w-12" />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-3xl font-heading font-black tracking-tight text-[#1c1c1c]">Access Denied</h2>
+          <p className="text-[#535366]/60 font-black uppercase text-[10px] tracking-[0.2em]">Elevated Credentials Required</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 pb-12">
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            <SettingsIcon className="h-6 w-6 text-indigo-600" />
-            Global Settings
-          </h1>
-          <p className="text-slate-500 text-sm font-medium">Manage organization-wide configurations and dues.</p>
+    <div className="max-w-5xl mx-auto space-y-12 pb-20">
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 rounded-2xl bg-[#1c1c1c] flex items-center justify-center text-white shadow-xl shadow-black/10">
+              <Sliders className="h-6 w-6" />
+            </div>
+            <h1 className="text-4xl font-heading font-black tracking-tight text-[#1c1c1c]">System <span className="text-[#535366]">Configuration</span></h1>
+          </div>
+          <div className="flex items-center gap-4 text-[#535366]/60 bg-white/50 border border-[#dcd7cf] w-fit px-5 py-2.5 rounded-2xl backdrop-blur-sm">
+            <SettingsIcon className="h-4 w-4" />
+            <p className="text-xs font-black uppercase tracking-[0.2em]">Organization-wide Parameter Control</p>
+          </div>
         </div>
+        
         <Button 
           onClick={handleSave} 
           disabled={isSaving || isLoading}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl h-11 px-6 shadow-lg shadow-indigo-100 transition-all active:scale-95 gap-2"
+          className="bg-[#1c1c1c] hover:bg-[#1c1c1c]/90 text-white font-black rounded-2xl h-14 px-10 shadow-2xl shadow-black/10 transition-all active:scale-95 gap-3 uppercase text-[11px] tracking-[0.3em]"
         >
-          {isSaving ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          SAVE CHANGES
+          {isSaving ? <RefreshCw className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
+          Apply Changes
         </Button>
       </div>
 
-      <div className="grid gap-8">
-        {/* Monthly Cash Settings */}
-        <Card className="rounded-3xl border-slate-200 shadow-xl overflow-hidden bg-white">
-          <CardHeader className="bg-slate-50 border-b border-slate-100 p-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-indigo-100 rounded-xl">
-                <DollarSign className="h-5 w-5 text-indigo-600" />
-              </div>
-              <div>
-                <CardTitle className="text-lg font-bold">Monthly Cash Configuration</CardTitle>
-                <CardDescription className="text-xs">Set the monthly fee and trackable periods.</CardDescription>
-              </div>
+      <div className="grid gap-12">
+        <SettingsCard
+          title="Monthly Dues Strategy"
+          description="Establish global fee benchmarks and tracking cycles."
+          icon={DollarSign}
+          label="Tracked Cycles / Periods"
+          placeholder="e.g. Aug-2025"
+          items={months}
+          onItemsChange={setMonths}
+        >
+          <div className="max-w-md space-y-3 mb-10">
+            <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-[#535366]/40 ml-1">Default Unit Fee (IDR)</Label>
+            <div className="relative group">
+              <div className="absolute left-6 top-1/2 -translate-y-1/2 font-black text-[#535366]/30 text-base">Rp</div>
+              <Input 
+                type="number"
+                value={monthlyFee}
+                onChange={(e) => setMonthlyFee(Number(e.target.value))}
+                className="pl-14 pr-8 rounded-[1.5rem] border-2 border-[#dcd7cf] h-16 font-black text-2xl focus:border-[#1c1c1c] focus:ring-0 transition-all bg-[#f4f2ef]/30 group-hover:bg-white"
+              />
             </div>
-          </CardHeader>
-          <CardContent className="p-8 space-y-8">
-            <div className="max-w-xs space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Default Monthly Fee (Rp)</Label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">Rp</span>
-                <Input 
-                  type="number"
-                  value={monthlyFee}
-                  onChange={(e) => setMonthlyFee(Number(e.target.value))}
-                  className="pl-12 rounded-xl border-slate-200 h-12 font-black text-lg"
-                />
-              </div>
-            </div>
+          </div>
+        </SettingsCard>
 
-            <div className="space-y-4">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tracked Months / Periods</Label>
-              <div className="flex gap-2">
-                <Input 
-                  placeholder="e.g. Aug-2025"
-                  value={newMonth}
-                  onChange={(e) => setNewMonth(e.target.value)}
-                  className="rounded-xl border-slate-200 h-11"
-                  onKeyPress={(e) => e.key === 'Enter' && addMonth()}
-                />
-                <Button onClick={addMonth} className="bg-slate-900 text-white rounded-xl h-11 px-4 font-bold"><Plus className="h-4 w-4" /></Button>
-              </div>
-              <div className="flex flex-wrap gap-2 pt-2">
-                {months.map(month => (
-                  <Badge key={month} className="bg-slate-100 text-slate-700 hover:bg-slate-200 border-none py-2 px-4 rounded-xl flex items-center gap-2 group transition-all">
-                    <span className="font-bold text-xs">{month}</span>
-                    <button onClick={() => setMonths(months.filter(m => m !== month))} className="text-slate-400 hover:text-rose-500"><X className="h-3 w-3" /></button>
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          <SettingsCard
+            title="Classification Tags"
+            description="Operational event labels for ledger entries."
+            icon={Shield}
+            label="Registry Events"
+            placeholder="e.g. SPONSORSHIP"
+            items={ledgerEvents}
+            onItemsChange={setLedgerEvents}
+          />
 
-        {/* Ledger Settings */}
-        <Card className="rounded-3xl border-slate-200 shadow-xl overflow-hidden bg-white">
-          <CardHeader className="bg-slate-50 border-b border-slate-100 p-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-indigo-100 rounded-xl">
-                <Shield className="h-5 w-5 text-indigo-600" />
-              </div>
-              <div>
-                <CardTitle className="text-lg font-bold">Ledger Configuration</CardTitle>
-                <CardDescription className="text-xs">Manage events and payment methods for the ledger.</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-8 space-y-8">
-            <div className="space-y-4">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Ledger Events</Label>
-              <div className="flex gap-2">
-                <Input 
-                  placeholder="e.g. SPONSORSHIP"
-                  value={newEvent}
-                  onChange={(e) => setNewEvent(e.target.value)}
-                  className="rounded-xl border-slate-200 h-11 font-bold"
-                  onKeyPress={(e) => e.key === 'Enter' && addEvent()}
-                />
-                <Button onClick={addEvent} className="bg-slate-900 text-white rounded-xl h-11 px-4 font-bold"><Plus className="h-4 w-4" /></Button>
-              </div>
-              <div className="flex flex-wrap gap-2 pt-2">
-                {ledgerEvents.map(ev => (
-                  <Badge key={ev} className="bg-slate-100 text-slate-700 hover:bg-slate-200 border-none py-2 px-4 rounded-xl flex items-center gap-2 group transition-all">
-                    <span className="font-bold text-xs">{ev}</span>
-                    <button onClick={() => setLedgerEvents(ledgerEvents.filter(e => e !== ev))} className="text-slate-400 hover:text-rose-500"><X className="h-3 w-3" /></button>
-                  </Badge>
-                ))}
-              </div>
-            </div>
+          <SettingsCard
+            title="Financial Channels"
+            description="Define valid transaction mediums."
+            icon={CreditCard}
+            label="Account Sources"
+            placeholder="e.g. OVO"
+            items={ledgerPaymentTypes}
+            onItemsChange={setLedgerPaymentTypes}
+          />
+        </div>
 
-            <div className="space-y-4 pt-4">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Payment Types / Sources</Label>
-              <div className="flex gap-2">
-                <Input 
-                  placeholder="e.g. OVO"
-                  value={newPaymentType}
-                  onChange={(e) => setNewPaymentType(e.target.value)}
-                  className="rounded-xl border-slate-200 h-11 font-bold"
-                  onKeyPress={(e) => e.key === 'Enter' && addPaymentType()}
-                />
-                <Button onClick={addPaymentType} className="bg-slate-900 text-white rounded-xl h-11 px-4 font-bold"><Plus className="h-4 w-4" /></Button>
-              </div>
-              <div className="flex flex-wrap gap-2 pt-2">
-                {ledgerPaymentTypes.map(pt => (
-                  <Badge key={pt} className="bg-slate-100 text-slate-700 hover:bg-slate-200 border-none py-2 px-4 rounded-xl flex items-center gap-2 group transition-all">
-                    <span className="font-bold text-xs">{pt}</span>
-                    <button onClick={() => setLedgerPaymentTypes(ledgerPaymentTypes.filter(t => t !== pt))} className="text-slate-400 hover:text-rose-500"><X className="h-3 w-3" /></button>
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <SettingsCard
+          title="Operational Taxonomy"
+          description="Define global metadata labels for task management."
+          icon={TagIcon}
+          label="System-wide Task Tags"
+          placeholder="e.g. Urgent, Meeting, Agenda"
+          items={taskTags}
+          onItemsChange={setTaskTags}
+        />
 
-        {/* System Info */}
-        <div className="bg-amber-50 rounded-2xl p-6 border border-amber-100 flex gap-4">
-          <Calendar className="h-6 w-6 text-amber-600 shrink-0" />
-          <div className="space-y-1">
-            <p className="text-sm font-bold text-amber-900">Important Note</p>
-            <p className="text-xs text-amber-700 leading-relaxed">
-              Changing these settings will immediately affect the dropdowns and calculations in the Finance and Monthly Cash pages.
+        <div className="bg-[#1c1c1c] rounded-[2.5rem] p-10 border border-[#dcd7cf] flex flex-col md:flex-row gap-8 shadow-2xl shadow-black/10 overflow-hidden relative">
+          <div className="absolute top-0 right-0 h-full w-32 bg-gradient-to-l from-white/5 to-transparent pointer-events-none" />
+          <div className="h-16 w-16 rounded-2xl bg-white/10 flex items-center justify-center text-white shrink-0 border border-white/10">
+            <Calendar className="h-8 w-8" />
+          </div>
+          <div className="space-y-3">
+            <p className="text-sm font-black text-white uppercase tracking-[0.2em]">Operational Impact</p>
+            <p className="text-xs text-white/60 leading-relaxed max-w-2xl font-medium">
+              Synchronizing these parameters will trigger immediate updates across all organizational modules including Finance, Tasks, and Member Registry. Use with discretion.
             </p>
           </div>
         </div>

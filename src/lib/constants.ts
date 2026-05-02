@@ -16,7 +16,9 @@ export type Division = typeof DIVISIONS[number];
 export const ROLES = [
   { id: 'super_admin', label: 'Super Admin', color: 'bg-red-100 text-red-700' },
   { id: 'admin', label: 'Admin', color: 'bg-blue-100 text-blue-700' },
-  { id: 'member', label: 'Member', color: 'bg-slate-100 text-slate-700' },
+  { id: 'lead', label: 'Division Lead', color: 'bg-emerald-100 text-emerald-700' },
+  { id: 'co_lead', label: 'Co-Lead', color: 'bg-teal-100 text-teal-700' },
+  { id: 'member', label: 'Member', color: 'bg-[#eae6e0] text-[#535366]' },
   { id: 'advisor', label: 'Advisor', color: 'bg-amber-100 text-amber-700' },
 ] as const;
 

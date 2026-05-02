@@ -1,6 +1,6 @@
 # 🏢 FOLKS HUB - Internal Management System
 
-**FOLKS HUB** is a modern, data-driven internal management platform designed for organizational efficiency. Built with speed and reliability in mind, it leverages a cutting-edge tech stack to manage members, tasks, finances, and real-time alerts.
+**FOLKS HUB** is a modern, data-driven internal management platform dedicated for **UKM FOLKS (Foreign Language ITK Society)**. Built with the hope of improving organizational efficiency, it centralizes all management tasks—members, tasks, finances, and real-time alerts—into one unified place.
 
 ---
 
@@ -49,12 +49,9 @@ cp .env.example .env
 *After creating `.env`, fill in your Supabase credentials and Gemini API key.*
 
 ### 2. Database Setup
-Execute the following SQL scripts in your **Supabase SQL Editor** (in order):
-1. `supabase_schema.sql` (Core tables)
-2. `supabase_rls_fix.sql` (CRUD Permissions)
-3. `supabase_auth_decouple.sql` (Manual Member adding)
-4. `supabase_notifications.sql` (Alerts system)
-5. `supabase_agenda.sql` (Upcoming deadlines)
+A unified SQL setup script is provided in the root directory. Execute the following in your **Supabase SQL Editor**:
+1. Copy the contents of `supabase_setup.sql`.
+2. Paste and run it in your Supabase SQL Editor. This will generate all the required tables (profiles, tasks, split_bills, transactions, monthly_cash) and set up the necessary Row Level Security (RLS) policies.
 
 ### 3. Running with Docker (Recommended)
 
@@ -101,6 +98,7 @@ folks-hub/
 ├── Dockerfile          # Production build configuration
 ├── docker-compose.yml  # Production orchestration
 ├── docker-compose.dev.yml # Development orchestration
+├── supabase_setup.sql  # Unified Supabase DB setup script
 └── nginx.conf          # Nginx configuration for SPA routing
 ```
 
@@ -122,6 +120,20 @@ If you prefer running the application locally without Docker, you can use either
 
 ---
 
+## 👥 Development Team
+
+This platform is developed and maintained by the **Executive Leadership of Creative Media & Finance**:
+
+- **Akmal Falah Maulana** ([@shirotenma](https://github.com/shirotenma))  
+  *Lead of Creative Media 2025/2026*  
+  NIM: 11231006 | Cohort 2023
+  
+- **Ansellma Tita Pakartiwuri Putri** ([@secretceremony](https://github.com/secretceremony))  
+  *Treasurer 2025/2026*  
+  NIM: 10231017 | Cohort 2023
+
+---
+
 ## 🤝 Contributing
 
 1. Fork the Project
@@ -132,4 +144,4 @@ If you prefer running the application locally without Docker, you can use either
 
 ---
 
-Developed with ❤️ for **FOLKS**.
+Made with dedication to make FOLKS better.

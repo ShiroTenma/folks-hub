@@ -8,20 +8,32 @@ export type TaskStatus = 'todo' | 'in_progress' | 'done';
 export function useTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
+  const [taskTags, setTaskTags] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [tasksRes, profilesRes] = await Promise.all([
+      const [tasksRes, profilesRes, settingsRes] = await Promise.all([
         supabase.from('tasks').select('*').order('created_at', { ascending: false }),
-        supabase.from('profiles').select('*')
+        supabase.from('profiles').select('*'),
+        supabase.from('settings').select('*')
       ]);
 
       if (tasksRes.error) throw tasksRes.error;
       if (profilesRes.error) throw profilesRes.error;
 
       setTasks(tasksRes.data || []);
+
+      const tagsSetting = settingsRes.data?.find(s => s.key === 'task_tags');
+      if (tagsSetting) {
+        try {
+          const parsed = typeof tagsSetting.value === 'string' ? JSON.parse(tagsSetting.value) : tagsSetting.value;
+          setTaskTags(Array.isArray(parsed) ? parsed : []);
+        } catch (e) {
+          console.error('Error parsing task tags:', e);
+        }
+      }
       
       const profileMap = (profilesRes.data || []).reduce((acc, p) => ({
         ...acc,
@@ -43,6 +55,7 @@ export function useTasks() {
       .channel('tasks_changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => fetchData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => fetchData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, () => fetchData())
       .subscribe();
 
     return () => {
@@ -123,6 +136,7 @@ export function useTasks() {
   return {
     tasks,
     profiles,
+    taskTags,
     isLoading,
     fetchData,
     handleUpdateTaskStatus,
